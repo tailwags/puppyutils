@@ -30,14 +30,14 @@ fn main() -> Result {
                 println!("Usage: uname"); // TODO: add all options
                 return Ok(());
             }
-            Long("all") | Short('a') => {
+            Short('a') | Long("all") => {
                 info_mask = Info::all();
             }
-            Long("kernel-name") | Short('s') => info_mask |= Info::KERNEL_NAME,
-            Long("nodename") | Short('n') => info_mask |= Info::NODENAME,
-            Long("kernel-release") | Short('r') => info_mask |= Info::KERNEL_RELEASE,
-            Long("kernel-version") | Short('v') => info_mask |= Info::KERNEL_VERSION,
-            Long("machine") | Short('m') => info_mask |= Info::MACHINE,
+            Short('s') | Long("kernel-name") => info_mask |= Info::KERNEL_NAME,
+            Short('n') | Long("nodename") => info_mask |= Info::NODENAME,
+            Short('r') | Long("kernel-release") => info_mask |= Info::KERNEL_RELEASE,
+            Short('v') | Long("kernel-version") => info_mask |= Info::KERNEL_VERSION,
+            Short('m') | Long("machine") => info_mask |= Info::MACHINE,
             _ => return Err(Exit::ArgError(arg.unexpected())),
         }
     }
