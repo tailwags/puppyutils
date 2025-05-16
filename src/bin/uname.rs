@@ -24,5 +24,7 @@ fn main() -> Result {
 
     stdout.write_all(b"\n")?;
 
+    stdout.flush()?;
+
     Ok(())
 }
