@@ -1,16 +1,18 @@
 use std::{
     borrow::Cow,
-    io::{self, BufWriter, Write},
+    env,
+    io::{BufWriter, Write, stdout},
     os::unix::ffi::OsStringExt,
+    process::ExitCode,
 };
 
-fn main() -> io::Result<()> {
+fn main() -> ExitCode {
     // Creates a handle to stdout and wraps it into an in memory buffer.
     // No point in locking stdout since we only use it once in this program
-    let mut out = BufWriter::new(std::io::stdout());
+    let mut out = BufWriter::new(stdout());
 
     // We can easily avoid the overhead of utf-8 since this is unix anyway
-    let mut args = std::env::args_os();
+    let mut args = env::args_os();
     args.next(); // Calling next once is actually more efficient than using skip, we need this to skip the program name itself
 
     // We prepare the output so it doesn't need to go through the formatting each time
@@ -31,6 +33,8 @@ fn main() -> io::Result<()> {
 
     // Write everything to stdout, BufWriter will handle the buffering
     loop {
-        out.write_all(&output)?;
+        if out.write_all(&output).is_err() {
+            break ExitCode::FAILURE;
+        }
     }
 }
