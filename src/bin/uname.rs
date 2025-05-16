@@ -6,28 +6,52 @@ use rustix::system::uname;
 
 bitflags::bitflags! {
     #[derive(Debug)]
-    pub struct Info: u32 {
+    pub struct Info: u8 {
         const KERNEL_NAME = 0b00000001;
         const NODENAME = 0b00000010;
         const KERNEL_RELEASE = 0b00000100;
         const KERNEL_VERSION = 0b00001000;
         const MACHINE = 0b00010000;
+        const PROCESSOR = 0b00100000;
+        const HARDWARE_PLATFORM = 0b01000000;
+        const OPERATING_SYSTEM = 0b10000000;
     }
 }
 
+const HELP_TEXT: &str = "Usage: uname [OPTION]...
+Print system information.
+
+  -a, --all                print all information
+  -s, --kernel-name        print the kernel name (default)
+  -n, --nodename           print the network node hostname
+  -r, --kernel-release     print the kernel release
+  -v, --kernel-version     print the kernel version
+  -m, --machine            print the machine hardware name
+  -p, --processor          print the processor type
+  -i, --hardware-platform  print the hardware platform
+  -o, --operating-system   print the operating system
+      --help               display this help and exit
+      --version            output version information and exit
+
+With no OPTION, same as -s.
+";
+
 fn main() -> Result {
     let mut info_mask = Info::empty();
+    let mut stdout = stdout();
 
     let mut arg_parser = lexopt::Parser::from_env();
 
     while let Some(arg) = arg_parser.next()? {
         match arg {
             Long("version") => {
-                println!("puppyutils 0.0.1"); // TODO: properly generate this string
+                stdout.write_all(b"puppyutils 0.0.1\n")?;
+                stdout.flush()?;
                 return Ok(());
             }
             Long("help") => {
-                println!("Usage: uname"); // TODO: add all options
+                stdout.write_all(HELP_TEXT.as_bytes())?;
+                stdout.flush()?;
                 return Ok(());
             }
             Short('a') | Long("all") => {
@@ -38,46 +62,74 @@ fn main() -> Result {
             Short('r') | Long("kernel-release") => info_mask |= Info::KERNEL_RELEASE,
             Short('v') | Long("kernel-version") => info_mask |= Info::KERNEL_VERSION,
             Short('m') | Long("machine") => info_mask |= Info::MACHINE,
+            Short('p') | Long("processor") => info_mask |= Info::PROCESSOR,
+            Short('i') | Long("hardware-platform") => info_mask |= Info::HARDWARE_PLATFORM,
+            Short('o') | Long("operating-system") => info_mask |= Info::OPERATING_SYSTEM,
             _ => return Err(Exit::ArgError(arg.unexpected())),
         }
     }
 
     if info_mask.is_empty() {
-        info_mask = Info::KERNEL_NAME
+        info_mask = Info::KERNEL_NAME;
     }
 
     let uname = uname();
+    let mut first = true;
 
-    let mut stdout = stdout();
+    // Helper function to write field with space handling
+    let mut write_field = |data: &[u8]| -> Result<()> {
+        if !first {
+            stdout.write_all(b" ")?;
+        }
+        stdout.write_all(data)?;
+        first = false;
+        Ok(())
+    };
 
-    // FIXME: we should keep track of spaces to avoid traling ones
     if info_mask.contains(Info::KERNEL_NAME) {
-        stdout.write_all(uname.sysname().to_bytes())?;
-        stdout.write_all(b" ")?;
+        write_field(uname.sysname().to_bytes())?;
     }
 
     if info_mask.contains(Info::NODENAME) {
-        stdout.write_all(uname.nodename().to_bytes())?;
-        stdout.write_all(b" ")?;
+        write_field(uname.nodename().to_bytes())?;
     }
 
     if info_mask.contains(Info::KERNEL_RELEASE) {
-        stdout.write_all(uname.release().to_bytes())?;
-        stdout.write_all(b" ")?;
+        write_field(uname.release().to_bytes())?;
     }
 
     if info_mask.contains(Info::KERNEL_VERSION) {
-        stdout.write_all(uname.version().to_bytes())?;
-        stdout.write_all(b" ")?;
+        write_field(uname.version().to_bytes())?;
     }
 
     if info_mask.contains(Info::MACHINE) {
-        stdout.write_all(uname.machine().to_bytes())?;
-        stdout.write_all(b" ")?;
+        write_field(uname.machine().to_bytes())?;
+    }
+
+    if info_mask.contains(Info::PROCESSOR) {
+        if !info_mask.is_all() {
+            // TODO: figure out if there is anything to do here
+            write_field(b"unknown")?;
+        }
+    }
+
+    if info_mask.contains(Info::HARDWARE_PLATFORM) {
+        if !info_mask.is_all() {
+            // TODO: figure out if there is anything to do here
+            write_field(b"unknown")?;
+        }
+    }
+
+    if info_mask.contains(Info::OPERATING_SYSTEM) {
+        let os: &[u8] = match uname.sysname().to_bytes() {
+            b"Linux" => b"GNU/Linux",
+            _ => b"unknown",
+        };
+
+        write_field(os)?;
     }
 
     stdout.write_all(b"\n")?;
-
     stdout.flush()?;
 
     Ok(())
