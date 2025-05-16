@@ -1,10 +1,27 @@
 use std::io::{Write, stdout};
 
 use acumen::getpwuid;
-use coreutils::Result;
+use coreutils::{Exit, Result};
+use lexopt::prelude::*;
 use rustix::process::geteuid;
 
 fn main() -> Result {
+    let mut arg_parser = lexopt::Parser::from_env();
+
+    while let Some(arg) = arg_parser.next()? {
+        match arg {
+            Long("version") | Short('v') => {
+                println!("puppyutils 0.0.1"); // TODO: properly generate this string
+                return Ok(());
+            }
+            Long("help") | Short('h') => {
+                println!("Usage: whoami");
+                return Ok(());
+            }
+            _ => return Err(Exit::ArgError(arg.unexpected())),
+        }
+    }
+
     let uid = geteuid();
     let passwd = getpwuid(uid);
 
