@@ -15,7 +15,9 @@ fn main() -> Result {
                 return Ok(());
             }
             Long("help") | Short('h') => {
-                println!("Usage: whoami");
+                println!(
+                    "Usage: whoami\nPrint the user name associated with the current effective user ID."
+                );
                 return Ok(());
             }
             _ => return Err(Exit::ArgError(arg.unexpected())),
