@@ -7,7 +7,6 @@ edition = "2024"
 lto = true
 codegen-units = 1
 strip = true
-# panic = "abort"
 
 [profile.bloat]
 inherits = "release"
