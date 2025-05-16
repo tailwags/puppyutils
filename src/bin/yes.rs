@@ -3,10 +3,11 @@ use std::{
     env,
     io::{BufWriter, Write, stdout},
     os::unix::ffi::OsStringExt,
-    process::ExitCode,
 };
 
-fn main() -> ExitCode {
+use coreutils::Result;
+
+fn main() -> Result {
     // Creates a handle to stdout and wraps it into an in memory buffer.
     // No point in locking stdout since we only use it once in this program
     let mut out = BufWriter::new(stdout());
@@ -33,8 +34,6 @@ fn main() -> ExitCode {
 
     // Write everything to stdout, BufWriter will handle the buffering
     loop {
-        if out.write_all(&output).is_err() {
-            break ExitCode::FAILURE;
-        }
+        out.write_all(&output)?
     }
 }
