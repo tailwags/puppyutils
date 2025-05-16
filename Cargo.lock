@@ -22,6 +22,7 @@ name = "coreutils"
 version = "0.1.0"
 dependencies = [
  "acumen",
+ "bitflags",
  "lexopt",
  "rustix",
 ]
