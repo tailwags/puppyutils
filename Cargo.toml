@@ -13,3 +13,4 @@ inherits = "release"
 strip = false
 
 [dependencies]
+rustix = { version = "1.0.7", features = ["system"] }
