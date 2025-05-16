@@ -13,4 +13,5 @@ inherits = "release"
 strip = false
 
 [dependencies]
-rustix = { version = "1.0.7", features = ["system"] }
+acumen = "0.0.3"
+rustix = { version = "1.0.7", features = ["process", "system"] }
