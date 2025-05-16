@@ -3,6 +3,7 @@ use std::{fmt::Debug, io, process::ExitCode};
 pub type Result<T = (), E = Exit> = std::result::Result<T, E>;
 
 pub enum Exit {
+    ArgError(lexopt::Error),
     IoError(io::Error),
     Code(ExitCode),
 }
@@ -10,9 +11,16 @@ pub enum Exit {
 impl Debug for Exit {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::ArgError(err) => err.fmt(f),
             Self::IoError(err) => err.fmt(f),
             Self::Code(code) => code.fmt(f),
         }
+    }
+}
+
+impl From<lexopt::Error> for Exit {
+    fn from(err: lexopt::Error) -> Self {
+        Self::ArgError(err)
     }
 }
 

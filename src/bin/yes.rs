@@ -6,8 +6,25 @@ use std::{
 };
 
 use coreutils::Result;
+use lexopt::prelude::*;
 
 fn main() -> Result {
+    let mut arg_parser = lexopt::Parser::from_env();
+
+    while let Some(arg) = arg_parser.next()? {
+        match arg {
+            Long("version") | Short('v') => {
+                println!("puppyutils 0.0.1"); // TODO: properly generate this string
+                return Ok(());
+            }
+            Long("help") | Short('h') => {
+                println!("Usage: yes [STRING]...");
+                return Ok(());
+            }
+            _ => break, // We only care about parsing help/version options since we manually read the rest of the arguments
+        }
+    }
+
     // Creates a handle to stdout and wraps it into an in memory buffer.
     // No point in locking stdout since we only use it once in this program
     let mut out = BufWriter::new(stdout());
