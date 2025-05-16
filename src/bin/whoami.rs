@@ -10,11 +10,11 @@ fn main() -> Result {
 
     while let Some(arg) = arg_parser.next()? {
         match arg {
-            Long("version") | Short('v') => {
+            Long("version") => {
                 println!("puppyutils 0.0.1"); // TODO: properly generate this string
                 return Ok(());
             }
-            Long("help") | Short('h') => {
+            Long("help") => {
                 println!(
                     "Usage: whoami\nPrint the user name associated with the current effective user ID."
                 );
