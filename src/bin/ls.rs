@@ -3,7 +3,7 @@ use rustix::{
     fs::{Dir, Mode, OFlags, open},
     termios::tcgetwinsize,
 };
-use sap::parser_from_env;
+use sap::Parser;
 
 const CURRENT_DIR_PATH: &str = ".";
 
@@ -44,14 +44,14 @@ impl Permissions {
 
 fn main() -> Result {
     let mut any_args = false;
-    let mut args = parser_from_env()?;
+    let mut args = Parser::from_env()?;
 
-    while let Some(arg) = args.forward() {
+    while let Some(arg) = args.forward()? {
         if !any_args {
             any_args = true
         };
 
-        match arg? {
+        match arg {
             _ => {}
         }
     }

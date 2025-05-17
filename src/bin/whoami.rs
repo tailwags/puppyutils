@@ -3,13 +3,13 @@ use std::io::{Write, stdout};
 use acumen::getpwuid;
 use coreutils::{Exit, Result};
 use rustix::process::geteuid;
-use sap::{Argument::Long, parser_from_env};
+use sap::{Argument::Long, Parser};
 
 fn main() -> Result {
-    let mut arg_parser = parser_from_env().expect("invalid environment");
+    let mut arg_parser = Parser::from_env()?;
 
-    while let Some(arg) = arg_parser.forward() {
-        match arg? {
+    while let Some(arg) = arg_parser.forward()? {
+        match arg {
             Long("version") => {
                 println!("puppyutils 0.0.1"); // TODO: properly generate this string
                 return Ok(());

@@ -1,10 +1,10 @@
 use std::io::{Write, stdout};
 
-use coreutils::{Exit, Result};
+use coreutils::Result;
 use rustix::system::uname;
 use sap::{
     Argument::{Long, Short},
-    parser_from_env,
+    Parser,
 };
 
 bitflags::bitflags! {
@@ -43,10 +43,10 @@ fn main() -> Result {
     let mut info_mask = Info::empty();
     let mut stdout = stdout();
 
-    let mut arg_parser = parser_from_env().expect("invalid environment");
+    let mut arg_parser = Parser::from_env()?;
 
-    while let Some(arg) = arg_parser.forward() {
-        match arg? {
+    while let Some(arg) = arg_parser.forward()? {
+        match arg {
             Long("version") => {
                 stdout.write_all(b"puppyutils 0.0.1\n")?;
                 stdout.flush()?;

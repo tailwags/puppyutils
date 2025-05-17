@@ -2,8 +2,11 @@ use std::{fmt::Debug, io, process::ExitCode};
 
 pub type Result<T = (), E = Exit> = std::result::Result<T, E>;
 
+/// Represents the type of error
+/// that caused the program to exit
+/// prematurely
 pub enum Exit {
-    ArgError(lexopt::Error),
+    ArgError(sap::ParsingError),
     IoError(io::Error),
     Code(ExitCode),
 }
@@ -18,9 +21,15 @@ impl Debug for Exit {
     }
 }
 
-impl From<lexopt::Error> for Exit {
-    fn from(err: lexopt::Error) -> Self {
-        Self::ArgError(err)
+impl From<rustix::io::Errno> for Exit {
+    fn from(value: rustix::io::Errno) -> Self {
+        Self::IoError(value.into())
+    }
+}
+
+impl From<sap::ParsingError> for Exit {
+    fn from(value: sap::ParsingError) -> Self {
+        Self::ArgError(value)
     }
 }
 
