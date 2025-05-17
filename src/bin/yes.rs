@@ -6,13 +6,13 @@ use std::{
 };
 
 use coreutils::Result;
-use lexopt::prelude::*;
+use sap::{Argument::Long, parser_from_env};
 
 fn main() -> Result {
-    let mut arg_parser = lexopt::Parser::from_env();
+    let mut arg_parser = parser_from_env().expect("invalid environment");
 
-    while let Some(arg) = arg_parser.next()? {
-        match arg {
+    while let Some(arg) = arg_parser.forward() {
+        match arg? {
             Long("version") => {
                 println!("puppyutils 0.0.1"); // TODO: properly generate this string
                 return Ok(());

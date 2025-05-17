@@ -1,8 +1,11 @@
 use std::io::{Write, stdout};
 
 use coreutils::{Exit, Result};
-use lexopt::prelude::*;
 use rustix::system::uname;
+use sap::{
+    Argument::{Long, Short},
+    parser_from_env,
+};
 
 bitflags::bitflags! {
     #[derive(Debug)]
@@ -40,10 +43,10 @@ fn main() -> Result {
     let mut info_mask = Info::empty();
     let mut stdout = stdout();
 
-    let mut arg_parser = lexopt::Parser::from_env();
+    let mut arg_parser = parser_from_env().expect("invalid environment");
 
-    while let Some(arg) = arg_parser.next()? {
-        match arg {
+    while let Some(arg) = arg_parser.forward() {
+        match arg? {
             Long("version") => {
                 stdout.write_all(b"puppyutils 0.0.1\n")?;
                 stdout.flush()?;
@@ -65,7 +68,8 @@ fn main() -> Result {
             Short('p') | Long("processor") => info_mask |= Info::PROCESSOR,
             Short('i') | Long("hardware-platform") => info_mask |= Info::HARDWARE_PLATFORM,
             Short('o') | Long("operating-system") => info_mask |= Info::OPERATING_SYSTEM,
-            _ => return Err(Exit::ArgError(arg.unexpected())),
+
+            argument => return Err(argument.into_error(None).into()),
         }
     }
 

@@ -2,14 +2,14 @@ use std::io::{Write, stdout};
 
 use acumen::getpwuid;
 use coreutils::{Exit, Result};
-use lexopt::prelude::*;
 use rustix::process::geteuid;
+use sap::{Argument::Long, parser_from_env};
 
 fn main() -> Result {
-    let mut arg_parser = lexopt::Parser::from_env();
+    let mut arg_parser = parser_from_env().expect("invalid environment");
 
-    while let Some(arg) = arg_parser.next()? {
-        match arg {
+    while let Some(arg) = arg_parser.forward() {
+        match arg? {
             Long("version") => {
                 println!("puppyutils 0.0.1"); // TODO: properly generate this string
                 return Ok(());
@@ -20,7 +20,7 @@ fn main() -> Result {
                 );
                 return Ok(());
             }
-            _ => return Err(Exit::ArgError(arg.unexpected())),
+            invalid => return Err(Exit::ArgError(invalid.into_error(None))),
         }
     }
 
