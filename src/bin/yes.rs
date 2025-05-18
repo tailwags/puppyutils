@@ -6,7 +6,7 @@ use std::{
 };
 
 const VERSION: &[u8] = coreutils::version_text!("yes").as_bytes();
-const HELP: &[u8] = b"Usage: yes [STRING]...\n";
+const HELP: &[u8] = b"Usage: yes [STRING]...\n"; // TODO: properly generate this string
 
 use coreutils::{Exit, Result};
 use sap::{
@@ -17,23 +17,18 @@ use sap::{
 fn main() -> Result {
     let mut arg_parser = Parser::from_env()?;
 
-    // Creates a handle to stdout and wraps it into an in memory buffer.
     // No point in locking stdout since we only use it once in this program
-    let mut out = BufWriter::new(stdout());
+    let mut stdout = stdout();
+
     if let Some(arg) = arg_parser.forward()? {
         match arg {
-            Long("version") => {
-                out.write_all(VERSION)?; // TODO: properly generate this string
-            }
-
-            Long("help") => out.write_all(HELP)?,
-
+            Long("version") => stdout.write_all(VERSION)?,
+            Long("help") => stdout.write_all(HELP)?,
             Long(_) | Short(_) => return Err(Exit::ArgError(arg.into_error(None))),
-
             _ => {}
         }
 
-        out.flush()?;
+        stdout.flush()?;
 
         return Ok(());
     }
@@ -59,7 +54,9 @@ fn main() -> Result {
     };
 
     // Write everything to stdout, BufWriter will handle the buffering
+    let mut stdout = BufWriter::new(stdout);
+
     loop {
-        out.write_all(&output)?;
+        stdout.write_all(&output)?;
     }
 }
