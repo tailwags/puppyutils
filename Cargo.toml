@@ -7,6 +7,7 @@ edition = "2024"
 lto = true
 codegen-units = 1
 strip = true
+panic = "abort"
 
 [profile.bloat]
 inherits = "release"
@@ -15,5 +16,11 @@ strip = false
 [dependencies]
 acumen = "0.0.3"
 bitflags = "2.9.1"
-rustix = { version = "1.0.7", features = ["process", "system", "termios", "fs", "stdio"] }
+rustix = { version = "1.0.7", features = [
+    "process",
+    "system",
+    "termios",
+    "fs",
+    "stdio",
+] }
 sap = "0.0.1"

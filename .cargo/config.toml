@@ -1,11 +1,5 @@
-[unstable]
-build-std = ["core", "alloc", "panic_abort", "std"]
-build-std-features = ["panic_immediate_abort"]
-
 [build]
 rustflags = [
-    "-C",
-    "panic=abort",
     "-C",
     "linker-plugin-lto",
     "-C",
