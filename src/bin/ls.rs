@@ -1,4 +1,5 @@
 #![allow(unused)] // FIXME: remove this
+#![allow(clippy::all)] // FIXME: This is horrible but this file is a mess anyway
 
 use coreutils::Result;
 use rustix::{

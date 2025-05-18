@@ -8,7 +8,7 @@ use sap::{Argument::Long, Parser};
 fn main() -> Result {
     let mut arg_parser = Parser::from_env()?;
 
-    while let Some(arg) = arg_parser.forward()? {
+    if let Some(arg) = arg_parser.forward()? {
         match arg {
             Long("version") => {
                 println!("puppyutils 0.0.1"); // TODO: properly generate this string

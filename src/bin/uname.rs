@@ -110,6 +110,7 @@ fn main() -> Result {
         write_field(uname.machine().to_bytes())?;
     }
 
+    #[allow(clippy::collapsible_if)]
     if info_mask.contains(Info::PROCESSOR) {
         if !info_mask.is_all() {
             // TODO: figure out if there is anything to do here
@@ -117,6 +118,7 @@ fn main() -> Result {
         }
     }
 
+    #[allow(clippy::collapsible_if)] // FIXME: remove this once we figure out what to do below
     if info_mask.contains(Info::HARDWARE_PLATFORM) {
         if !info_mask.is_all() {
             // TODO: figure out if there is anything to do here
@@ -124,6 +126,7 @@ fn main() -> Result {
         }
     }
 
+    #[allow(clippy::collapsible_if)]
     if info_mask.contains(Info::OPERATING_SYSTEM) {
         let os: &[u8] = match uname.sysname().to_bytes() {
             b"Linux" => b"GNU/Linux",

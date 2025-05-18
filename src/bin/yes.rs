@@ -11,7 +11,7 @@ use sap::{Argument::Long, Parser};
 fn main() -> Result {
     let mut arg_parser = Parser::from_env()?;
 
-    while let Some(arg) = arg_parser.forward()? {
+    if let Some(arg) = arg_parser.forward()? {
         match arg {
             Long("version") => {
                 println!("puppyutils 0.0.1"); // TODO: properly generate this string
@@ -21,7 +21,7 @@ fn main() -> Result {
                 println!("Usage: yes [STRING]...");
                 return Ok(());
             }
-            _ => break, // We only care about parsing help/version options since we manually read the rest of the arguments
+            _ => {} // We only care about parsing help/version options since we manually read the rest of the arguments
         }
     }
 
@@ -37,9 +37,9 @@ fn main() -> Result {
     let output: Cow<'_, [u8]> = if let Some(msg) = args.next() {
         let mut first = msg.into_vec(); // The first argument is always ready and we have a preallocated vec, we can just reuse it
 
-        while let Some(next) = args.next() {
+        for arg in args {
             first.push(b' '); // Manually put the space
-            first.append(&mut next.into_vec()); // Append will move the data efficiently from the other vector
+            first.append(&mut arg.into_vec()); // Append will move the data efficiently from the other vector
         }
 
         first.push(b'\n');
