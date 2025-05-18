@@ -5,8 +5,11 @@ use std::{
     os::unix::ffi::OsStringExt,
 };
 
-use coreutils::Result;
-use sap::{Argument::Long, Parser};
+use coreutils::{Exit, Result};
+use sap::{
+    Argument::{Long, Short},
+    Parser,
+};
 
 fn main() -> Result {
     let mut arg_parser = Parser::from_env()?;
@@ -21,7 +24,8 @@ fn main() -> Result {
                 println!("Usage: yes [STRING]...");
                 return Ok(());
             }
-            _ => {} // We only care about parsing help/version options since we manually read the rest of the arguments
+            Long(_) | Short(_) => return Err(Exit::ArgError(arg.into_error(None))),
+            _ => {}
         }
     }
 
