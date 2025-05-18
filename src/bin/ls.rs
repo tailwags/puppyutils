@@ -1,3 +1,5 @@
+#![allow(unused)] // FIXME: remove this
+
 use coreutils::Result;
 use rustix::{
     fs::{Dir, Mode, OFlags, open},
