@@ -1,4 +1,4 @@
-use std::io::{BufWriter, Write, stderr, stdout};
+use std::io::{Write, stderr, stdout};
 
 use acumen::getpwuid;
 use coreutils::{Exit, Result};
@@ -13,40 +13,36 @@ const HELP: &[u8] =
 const CANNOT_FIND_UID: &[u8] = b"cannot find name for user ID: ";
 
 fn main() -> Result {
-    let mut stdout = BufWriter::new(stdout());
+    let mut stdout = stdout();
     let mut arg_parser = Parser::from_env()?;
 
     if let Some(arg) = arg_parser.forward()? {
         match arg {
-            Long("version") => {
-                stdout.write_all(VERSION.as_bytes())?;
-                stdout.flush()?;
-                return Ok(());
-            }
-            Long("help") => {
-                stdout.write_all(HELP)?;
-                stdout.flush()?;
-                return Ok(());
-            }
+            Long("version") => stdout.write_all(VERSION.as_bytes())?,
+            Long("help") => stdout.write_all(HELP)?,
             invalid => return Err(Exit::ArgError(invalid.into_error(None))),
         }
+
+        stdout.flush()?;
+
+        return Ok(());
     }
 
     let uid = geteuid();
 
-    if let Some(passwd) = getpwuid(uid) {
+    if let Some(passwd) = getpwuid(geteuid()) {
         stdout.write_all(passwd.name.as_bytes())?;
         stdout.write_all(b"\n")?;
+
         stdout.flush()?;
     } else {
-        let mut err = BufWriter::new(stderr());
-        err.write_all(CANNOT_FIND_UID)?;
+        let mut stderr = stderr();
 
-        // uhh...
-        // FIXME: it's weird
-        err.write_all(uid.as_raw().to_string().as_bytes())?;
-        err.write_all(b"\n")?;
-        err.flush()?;
+        stderr.write_all(CANNOT_FIND_UID)?;
+        stderr.write_all(itoa::Buffer::new().format(uid.as_raw()).as_bytes())?;
+        stderr.write_all(b"\n")?;
+
+        stderr.flush()?;
     }
 
     Ok(())
