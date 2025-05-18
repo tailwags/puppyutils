@@ -1,4 +1,7 @@
-use std::{fmt::Debug, io, process::ExitCode};
+use std::{
+    fmt::{Debug, Display},
+    io,
+};
 
 pub type Result<T = (), E = Exit> = std::result::Result<T, E>;
 
@@ -8,15 +11,13 @@ pub type Result<T = (), E = Exit> = std::result::Result<T, E>;
 pub enum Exit {
     ArgError(sap::ParsingError),
     IoError(io::Error),
-    Code(ExitCode),
 }
 
 impl Debug for Exit {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::ArgError(err) => err.fmt(f),
-            Self::IoError(err) => err.fmt(f),
-            Self::Code(code) => code.fmt(f),
+            Self::ArgError(err) => Display::fmt(err, f),
+            Self::IoError(err) => Display::fmt(err, f),
         }
     }
 }
@@ -36,17 +37,5 @@ impl From<sap::ParsingError> for Exit {
 impl From<io::Error> for Exit {
     fn from(err: io::Error) -> Self {
         Self::IoError(err)
-    }
-}
-
-impl From<ExitCode> for Exit {
-    fn from(code: ExitCode) -> Self {
-        Self::Code(code)
-    }
-}
-
-impl From<()> for Exit {
-    fn from(_: ()) -> Self {
-        Self::Code(ExitCode::SUCCESS)
     }
 }
