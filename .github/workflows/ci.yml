@@ -1,0 +1,39 @@
+name: ci
+on: [push, pull_request]
+
+env:
+  RUSTFLAGS: "-Dwarnings"
+
+jobs:
+  test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Try building
+        run: cargo build --release
+
+      # - name: Install nextest to run tests
+      #   uses: taiki-e/install-action@nextest
+
+      # - name: Run tests
+      #   run: cargo nextest run --all-features
+
+  lint:
+    name: Lint project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check clippy
+        run: cargo clippy --all-targets --all-features
+
+  fmt:
+    name: Check Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run formatter
+        run: cargo fmt --check
