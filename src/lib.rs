@@ -39,3 +39,27 @@ impl From<io::Error> for Exit {
         Self::IoError(err)
     }
 }
+
+#[macro_export]
+macro_rules! version_text {
+    ($name: literal, $authors: literal) => {
+        concat!(
+            $name,
+            " (puppyutils) ",
+            "0.0.1",
+            "\ntodo: license text!", // <- todo
+            "\n\n",
+            $authors
+        )
+    };
+
+    ($name: literal) => {
+        concat!(
+            $name,
+            " (puppyutils) ",
+            "0.0.1",
+            "\ntodo: license text!", // <- todo
+            "\n",
+        )
+    };
+}

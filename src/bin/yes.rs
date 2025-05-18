@@ -5,6 +5,9 @@ use std::{
     os::unix::ffi::OsStringExt,
 };
 
+const VERSION: &[u8] = coreutils::version_text!("yes").as_bytes();
+const HELP: &[u8] = b"Usage: yes [STRING]...\n";
+
 use coreutils::{Exit, Result};
 use sap::{
     Argument::{Long, Short},
@@ -14,24 +17,26 @@ use sap::{
 fn main() -> Result {
     let mut arg_parser = Parser::from_env()?;
 
-    if let Some(arg) = arg_parser.forward()? {
-        match arg {
-            Long("version") => {
-                println!("puppyutils 0.0.1"); // TODO: properly generate this string
-                return Ok(());
-            }
-            Long("help") => {
-                println!("Usage: yes [STRING]...");
-                return Ok(());
-            }
-            Long(_) | Short(_) => return Err(Exit::ArgError(arg.into_error(None))),
-            _ => {}
-        }
-    }
-
     // Creates a handle to stdout and wraps it into an in memory buffer.
     // No point in locking stdout since we only use it once in this program
     let mut out = BufWriter::new(stdout());
+    if let Some(arg) = arg_parser.forward()? {
+        match arg {
+            Long("version") => {
+                out.write_all(VERSION)?; // TODO: properly generate this string
+            }
+
+            Long("help") => out.write_all(HELP)?,
+
+            Long(_) | Short(_) => return Err(Exit::ArgError(arg.into_error(None))),
+
+            _ => {}
+        }
+
+        out.flush()?;
+
+        return Ok(());
+    }
 
     // We can easily avoid the overhead of utf-8 since this is unix anyway
     let mut args = env::args_os();
@@ -55,6 +60,6 @@ fn main() -> Result {
 
     // Write everything to stdout, BufWriter will handle the buffering
     loop {
-        out.write_all(&output)?
+        out.write_all(&output)?;
     }
 }

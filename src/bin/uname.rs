@@ -39,6 +39,8 @@ Print system information.
 With no OPTION, same as -s.
 ";
 
+const VERSION: &str = coreutils::version_text!("uname", "0.0.1");
+
 fn main() -> Result {
     let mut info_mask = Info::empty();
     let mut stdout = stdout();
@@ -48,7 +50,8 @@ fn main() -> Result {
     while let Some(arg) = arg_parser.forward()? {
         match arg {
             Long("version") => {
-                stdout.write_all(b"puppyutils 0.0.1\n")?;
+                // stdout.write_all(b"puppyutils 0.0.1\n")?;
+                stdout.write_all(VERSION.as_bytes())?;
                 stdout.flush()?;
                 return Ok(());
             }
