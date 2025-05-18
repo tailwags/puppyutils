@@ -1,4 +1,7 @@
-[build]
+[unstable]
+profile-rustflags = true
+
+[profile.release]
 rustflags = [
     "-C",
     "linker-plugin-lto",
