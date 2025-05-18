@@ -23,4 +23,4 @@ rustix = { version = "1.0.7", features = [
     "fs",
     "stdio",
 ] }
-sap = "0.0.1"
+sap = "0.0.2"
