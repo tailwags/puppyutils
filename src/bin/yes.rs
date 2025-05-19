@@ -1,6 +1,6 @@
 use std::{
     borrow::Cow,
-    env,
+    ffi::OsString,
     io::{BufWriter, Write, stdout},
     os::unix::ffi::OsStringExt,
 };
@@ -10,7 +10,7 @@ const HELP: &[u8] = b"Usage: yes [STRING]...\n"; // TODO: properly generate this
 
 use coreutils::{Exit, Result};
 use sap::{
-    Argument::{Long, Short},
+    Argument::{Long, Short, Value},
     Parser,
 };
 
@@ -20,27 +20,35 @@ fn main() -> Result {
     // No point in locking stdout since we only use it once in this program
     let mut stdout = stdout();
 
+    let mut first_value: Option<Vec<u8>> = None;
+
     if let Some(arg) = arg_parser.forward()? {
         match arg {
-            Long("version") => stdout.write_all(VERSION)?,
-            Long("help") => stdout.write_all(HELP)?,
+            Long("version") => {
+                stdout.write_all(VERSION)?;
+                stdout.flush()?;
+
+                return Ok(());
+            }
+            Long("help") => {
+                stdout.write_all(HELP)?;
+                stdout.flush()?;
+
+                return Ok(());
+            }
             Long(_) | Short(_) => return Err(Exit::ArgError(arg.into_error(None))),
-            _ => {}
+            Value(value) => first_value = Some(value.as_bytes().to_vec()),
         }
-
-        stdout.flush()?;
-
-        return Ok(());
     }
 
-    // We can easily avoid the overhead of utf-8 since this is unix anyway
-    let mut args = env::args_os();
-    args.next(); // Calling next once is actually more efficient than using skip, we need this to skip the program name itself
+    let mut args = arg_parser.into_inner();
+
+    if first_value.is_none() {
+        first_value = args.next().map(OsString::into_vec);
+    }
 
     // We prepare the output so it doesn't need to go through the formatting each time
-    let output: Cow<'_, [u8]> = if let Some(msg) = args.next() {
-        let mut first = msg.into_vec(); // The first argument is always ready and we have a preallocated vec, we can just reuse it
-
+    let output: Cow<'_, [u8]> = if let Some(mut first) = first_value {
         for arg in args {
             first.push(b' '); // Manually put the space
             first.append(&mut arg.into_vec()); // Append will move the data efficiently from the other vector
