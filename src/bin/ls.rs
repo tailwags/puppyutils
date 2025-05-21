@@ -1,13 +1,153 @@
 #![allow(unused)] // FIXME: remove this
-#![allow(clippy::all)] // FIXME: This is horrible but this file is a mess anyway
+#![warn(clippy::all)] // FIXME: This is horrible but this file is a mess anyway
 
+use bitflags::{Flags, bitflags};
 use coreutils::Result;
 use rustix::{
     fs::{Dir, Mode, OFlags, open},
     termios::tcgetwinsize,
 };
-use sap::Parser;
+use sap::{
+    Argument::{Long, Short, Value},
+    Parser,
+};
 use std::io::{BufWriter, Write, stdout};
+
+const DEFAULT_BLOCK_SIZE: usize = 512;
+
+bitflags! {
+    struct LsFlags: u32 {
+        const NOT_IGNORE_DOTS = 1 << 0; // -a --all
+        const IGNORE_DOTS_EXCEPT_DIRS = 1 << 1; // -A --almost-all
+        const PRINT_AUTHOR = 1 << 2; // --author
+        const LIST_DIRECTORIES = 1 << 3; // -d -- directory
+        const C_STYLE_ESCAPED = 1 << 4; // -b --escape
+        const IGNORE_TILDE_ENTRIES = 1 << 5; // -B --ignore-backups
+        const LIST_BY_COLUMNS = 1 << 6; // -C
+        const EMACS_DIRED_MODE = 1 << 7; // -D --dired
+        const SORT_ENTRIES = 1 << 8; // partially -f (can disable it) and -U
+        const NO_OWNER_LISTED = 1 << 9; // related to -g
+        const NO_GROUPS_LISTED = 1 << 10; // -G --no-group
+        const HUMAN_READABLE_SIZES = 1 << 11; // -h --human-readable
+        const SI_SIZES = 1 << 12; // --si
+
+        // maybe -H will be here.
+
+        const PRINT_INODE_INDEXES = 1 << 13; // -i --inode
+        const KB_BLOCKS = 1 << 14; // -k --kibibytes
+        const LONG_LISTING = 1 << 15; // -l
+        const DEREF_SYMLINKS = 1 << 16; // -L --dereference
+        const COMMA_SEP_LIST = 1 << 17; // -m
+        const NUMERIC_IDS = 1 << 18; // -n --numeric-uid-gid
+        const LITERAL_NAMES = 1 << 19; // -N --literal
+        const REVERSE_SORT = 1 << 20; // -r, --reverse
+        const RECURSIVE = 1 << 21; // -R --recursive
+        const PRINT_ALLOCATED_SIZE = 1 << 22; // -s --size
+        const SORT_BY_VERSION_NUMBER = 1 << 23; // -v
+        const LIST_BY_LINES = 1 << 24; // -x
+        const PRINT_SECURIT_CTXT = 1 << 25; // -Z --context
+        const END_WITH_NUL = 1 << 26; // --zero
+        const ONE_FILE_PER_LINE = 1 << 27; // -1
+    }
+}
+
+enum SortOrder {
+    None,
+    Name,
+    Size,
+    Version,
+    Extension,
+    Width,
+    AccessTime,
+    Time(TimeStampType),
+}
+
+#[non_exhaustive]
+#[repr(u8)]
+enum TimeStampType {
+    FullIso,
+    LongIso,
+    Iso,
+    Locale,
+    // Format
+}
+
+#[repr(u8)]
+enum QuotingStyle {
+    Literal,
+    Locale,
+    Shell,
+    ShellAlways,
+    ShellEscape,
+    ShellEscapeAlways,
+}
+
+#[repr(u8)]
+enum IndicatorStyle {
+    None,
+    Slash,
+    FileType,
+    Classify,
+}
+
+#[repr(u8)]
+enum When {
+    Never,
+    Auto,
+    Always,
+}
+
+#[repr(u8)]
+enum Dereference {
+    // follow symlinks listed on the command line
+    Commandline,
+
+    // follow all symlinks in the directory
+    // only if they point to a directory
+    FollowAllDirs,
+
+    // just don't do it.
+    None,
+}
+
+struct LsConfig {
+    // order by which the entries will be sorted.
+    order: SortOrder,
+
+    // time of timestamp used by ls
+    time_ty: TimeStampType,
+
+    // settings that could be contained in bitflags.
+    flags: LsFlags,
+
+    // quoting style for names
+    quoting: QuotingStyle,
+
+    // indicator style to append to entry names.
+    indicator: IndicatorStyle,
+
+    // specifies how and which symlinks
+    // should be dereferenced
+    deref: Dereference,
+
+    // related to --color.
+    color: When,
+
+    // related to --hyperlink
+    hyperlink_file_names: When,
+
+    // related to --classify and -F
+    classify_files: When,
+
+    // directory to search through.
+    dir: Option<String>,
+
+    // block size
+    blk_size: usize,
+
+    // line width.
+    width: u16,
+}
 
 const CURRENT_DIR_PATH: &str = ".";
 
@@ -47,8 +187,24 @@ impl Permissions {
 }
 
 fn main() -> Result {
+    println!("size_of::<LsConfig>() => {}", size_of::<LsConfig>());
     let mut any_args = false;
     let mut args = Parser::from_env()?;
+
+    let mut settings = LsConfig {
+        flags: LsFlags::empty(),
+        order: SortOrder::Name,
+        time_ty: TimeStampType::Locale,
+        quoting: QuotingStyle::Literal,
+        indicator: IndicatorStyle::None,
+        deref: Dereference::None,
+        color: When::Always,
+        hyperlink_file_names: When::Always,
+        classify_files: When::Always,
+        dir: None,
+        blk_size: DEFAULT_BLOCK_SIZE,
+        width: get_win_size().ws_col,
+    };
 
     while let Some(arg) = args.forward()? {
         if !any_args {
@@ -56,7 +212,33 @@ fn main() -> Result {
         }
 
         match arg {
-            _ => {}
+            Short('a') | Long("all") => {
+                settings.flags |= LsFlags::NOT_IGNORE_DOTS;
+            }
+
+            Short('A') | Long("almost-all") => {
+                settings.flags |= LsFlags::IGNORE_DOTS_EXCEPT_DIRS;
+            }
+
+            Long("author") => {
+                settings.flags |= LsFlags::PRINT_AUTHOR;
+            }
+
+            Short('b') | Long("escape") => {
+                settings.flags |= LsFlags::C_STYLE_ESCAPED;
+            }
+
+            Long("block-size") => {
+                if let Some(arg) = args.value() {
+                    // do the block-size
+                } else {
+                    // error out
+                }
+            }
+
+            _ => {
+                // todo!
+            }
         }
     }
 
@@ -87,6 +269,11 @@ fn main() -> Result {
     }
 
     Ok(())
+}
+
+fn get_win_size() -> rustix::termios::Winsize {
+    let stderr_fd = rustix::stdio::stderr();
+    tcgetwinsize(stderr_fd).expect("couldn't get terminal size")
 }
 
 // FIXME: This algorithm to print out lines is incredibly simplistic
