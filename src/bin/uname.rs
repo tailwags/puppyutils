@@ -8,16 +8,16 @@ use sap::{
 };
 
 bitflags::bitflags! {
-    #[derive(Debug)]
+    #[rustfmt::skip]
     pub struct Info: u8 {
-        const KERNEL_NAME = 0b00000001;
-        const NODENAME = 0b00000010;
-        const KERNEL_RELEASE = 0b00000100;
-        const KERNEL_VERSION = 0b00001000;
-        const MACHINE = 0b00010000;
-        const PROCESSOR = 0b00100000;
-        const HARDWARE_PLATFORM = 0b01000000;
-        const OPERATING_SYSTEM = 0b10000000;
+        const KERNEL_NAME =         1 << 0;
+        const NODENAME =            1 << 1;
+        const KERNEL_RELEASE =      1 << 2;
+        const KERNEL_VERSION =      1 << 3;
+        const MACHINE =             1 << 4;
+        const PROCESSOR =           1 << 5;
+        const HARDWARE_PLATFORM =   1 << 6;
+        const OPERATING_SYSTEM =    1 << 7;
     }
 }
 
