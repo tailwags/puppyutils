@@ -1,0 +1,2 @@
+Usage: whoami
+Print the user name associated with the current effective user ID.

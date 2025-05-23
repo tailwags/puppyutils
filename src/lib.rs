@@ -63,3 +63,10 @@ macro_rules! version_text {
         )
     };
 }
+
+#[macro_export]
+macro_rules! help_text {
+    ($name: literal) => {
+        include_str!(concat!("../../docs/", $name, ".txt"))
+    };
+}
