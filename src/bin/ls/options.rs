@@ -1,3 +1,4 @@
+#![allow(dead_code, unused_variables)]
 #[repr(u8)]
 pub(crate) enum SortOrder {
     None,

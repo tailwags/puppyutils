@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use coreutils::Result;
 use sap::{
     Argument::{Long, Short},
@@ -109,7 +110,7 @@ pub(crate) fn parse_arguments(width: u16) -> Result<(LsConfig, bool)> {
             }
 
             Long("block-size") => {
-                if let Some(arg) = args.value() {
+                if let Some(_arg) = args.value() {
                     // do the block-size
                 } else {
                     needs_an_argument();
