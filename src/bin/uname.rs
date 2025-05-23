@@ -1,6 +1,6 @@
 use std::io::{Write, stdout};
 
-use coreutils::Result;
+use coreutils::{Result, help_text, version_text};
 use rustix::system::uname;
 use sap::{
     Argument::{Long, Short},
@@ -21,25 +21,8 @@ bitflags::bitflags! {
     }
 }
 
-const HELP_TEXT: &str = "Usage: uname [OPTION]...
-Print system information.
-
-  -a, --all                print all information
-  -s, --kernel-name        print the kernel name (default)
-  -n, --nodename           print the network node hostname
-  -r, --kernel-release     print the kernel release
-  -v, --kernel-version     print the kernel version
-  -m, --machine            print the machine hardware name
-  -p, --processor          print the processor type
-  -i, --hardware-platform  print the hardware platform
-  -o, --operating-system   print the operating system
-      --help               display this help and exit
-      --version            output version information and exit
-
-With no OPTION, same as -s.
-";
-
-const VERSION: &str = coreutils::version_text!("uname", "0.0.1");
+const VERSION: &str = version_text!("uname");
+const HELP: &str = help_text!("uname");
 
 fn main() -> Result {
     let mut info_mask = Info::empty();
@@ -50,13 +33,12 @@ fn main() -> Result {
     while let Some(arg) = arg_parser.forward()? {
         match arg {
             Long("version") => {
-                // stdout.write_all(b"puppyutils 0.0.1\n")?;
                 stdout.write_all(VERSION.as_bytes())?;
                 stdout.flush()?;
                 return Ok(());
             }
             Long("help") => {
-                stdout.write_all(HELP_TEXT.as_bytes())?;
+                stdout.write_all(HELP.as_bytes())?;
                 stdout.flush()?;
                 return Ok(());
             }

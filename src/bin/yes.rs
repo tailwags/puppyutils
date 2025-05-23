@@ -4,14 +4,14 @@ use std::{
     os::unix::ffi::OsStringExt,
 };
 
-const VERSION: &[u8] = coreutils::version_text!("yes").as_bytes();
-const HELP: &[u8] = b"Usage: yes [STRING]...\n"; // TODO: properly generate this string
-
-use coreutils::{Exit, Result};
+use coreutils::{Exit, Result, help_text, version_text};
 use sap::{
     Argument::{Long, Short, Value},
     Parser,
 };
+
+const VERSION: &str = version_text!("yes");
+const HELP: &str = help_text!("yes");
 
 fn main() -> Result {
     let mut arg_parser = Parser::from_env()?;
@@ -24,13 +24,13 @@ fn main() -> Result {
     while let Some(arg) = arg_parser.forward()? {
         match arg {
             Long("version") => {
-                stdout.write_all(VERSION)?;
+                stdout.write_all(VERSION.as_bytes())?;
                 stdout.flush()?;
 
                 return Ok(());
             }
             Long("help") => {
-                stdout.write_all(HELP)?;
+                stdout.write_all(HELP.as_bytes())?;
                 stdout.flush()?;
 
                 return Ok(());

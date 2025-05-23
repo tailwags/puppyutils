@@ -1,0 +1,1 @@
+Exit with a status code indicating success.

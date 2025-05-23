@@ -6,7 +6,10 @@ use std::{
     process::ExitCode,
 };
 
-use coreutils::Result;
+use coreutils::{Result, help_text, version_text};
+
+const VERSION: &str = version_text!("false");
+const HELP: &str = help_text!("false");
 
 fn main() -> Result {
     let mut args = std::env::args_os();
@@ -16,11 +19,11 @@ fn main() -> Result {
         if let Some(arg) = args.next() {
             match arg.as_bytes() {
                 b"--version" => {
-                    stdout().write_all(b"puppyutils 0.0.1\n")?;
+                    stdout().write_all(VERSION.as_bytes())?;
                     return Ok(());
                 }
                 b"--help" => {
-                    stdout().write_all(b"Exit with a status code indicating failure.\n")?;
+                    stdout().write_all(HELP.as_bytes())?;
                     return Ok(());
                 }
                 _ => {}
