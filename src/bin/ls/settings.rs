@@ -1,23 +1,34 @@
-#![allow(unused)] // FIXME: remove this
-#![warn(clippy::all)] // FIXME: This is horrible but this file is a mess anyway
-
-use bitflags::{Flags, bitflags};
 use coreutils::Result;
-use rustix::{
-    fs::{Dir, Mode, OFlags, open, setxattr},
-    termios::tcgetwinsize,
-};
 use sap::{
-    Argument::{Long, Short, Value},
+    Argument::{Long, Short},
     Parser,
 };
-use std::io::{BufWriter, Write, stdout};
 
+use crate::options::*;
 const DEFAULT_BLOCK_SIZE: usize = 512;
 
-bitflags! {
+macro_rules! s_print {
+    ($expr: expr) => {
+        let mut __stdout = std::io::stdout();
+        {
+            use std::io::Write;
+
+            __stdout.write_all($expr)
+        }?
+    };
+}
+
+fn needs_an_argument() -> ! {
+    todo!()
+}
+
+fn invalid_argument() -> ! {
+    todo!()
+}
+
+bitflags::bitflags! {
     #[rustfmt::skip]
-    struct LsFlags: u32 {
+    pub(crate) struct LsFlags: u32 {
         const NOT_IGNORE_DOTS =          1 << 0;  // -a --all
         const IGNORE_DOTS_EXCEPT_DIRS =  1 << 1;  // -A --almost-all
         const PRINT_AUTHOR =             1 << 2;  // --author
@@ -46,14 +57,17 @@ bitflags! {
         const PRINT_SECURIT_CTXT =       1 << 25; // -Z --context
         const END_WITH_NUL =             1 << 26; // --zero
         const ONE_FILE_PER_LINE =        1 << 27; // -1
+        const HIDE_CONTROL_CHARS =       1 << 28; // -q --hide-control-chars --show-control-chars
+        const QUOTE_ENTRIES =            1 << 29; // -Q --quote-name
+        const DIRECTORIES_FIRST =        1 << 30;
 
         /// refers to the `-c` option
         /// as it needs to be evaluated last.
-        const LOWERCASE_C =              1 << 28;
+        const LOWERCASE_C =              1 << 31;
     }
 }
 
-fn parse_arguments() -> Result<(LsConfig, bool)> {
+pub(crate) fn parse_arguments(width: u16) -> Result<(LsConfig, bool)> {
     let mut any_args = false;
     let mut args = Parser::from_env()?;
     let mut settings = LsConfig {
@@ -69,7 +83,7 @@ fn parse_arguments() -> Result<(LsConfig, bool)> {
         dir: None,
         blk_size: DEFAULT_BLOCK_SIZE,
         format: Formatting::Horizontal, // default seems to be horizontal
-        width: get_win_size().ws_col,
+        width,
     };
 
     while let Some(arg) = args.forward()? {
@@ -132,9 +146,8 @@ fn parse_arguments() -> Result<(LsConfig, bool)> {
             Short('f') => {
                 settings.flags &= !LsFlags::SORT_ENTRIES;
                 settings.flags |= LsFlags::NOT_IGNORE_DOTS;
-
+                settings.flags |= LsFlags::DIRECTORIES_FIRST;
                 settings.color = When::Never;
-                settings.order = SortOrder::Directory;
             }
 
             Short('F') | Long("classify") => {
@@ -255,6 +268,155 @@ fn parse_arguments() -> Result<(LsConfig, bool)> {
             Short('n') | Long("numeric-uid-gid") => {
                 settings.flags |= LsFlags::NUMERIC_IDS;
             }
+
+            Short('N') | Long("literal") => {
+                settings.flags |= LsFlags::LITERAL_NAMES;
+            }
+
+            Short('o') => {
+                settings.flags |= LsFlags::NO_GROUPS_LISTED;
+                settings.format = Formatting::Long;
+            }
+
+            Short('p') => {
+                settings.indicator = IndicatorStyle::Slash;
+            }
+
+            Short('q') | Long("hide-control-chars") => {
+                settings.flags |= LsFlags::HIDE_CONTROL_CHARS;
+            }
+
+            Long("show-control-chars") => {
+                settings.flags &= !LsFlags::HIDE_CONTROL_CHARS;
+            }
+
+            Short('Q') | Long("quote-name") => {
+                settings.flags |= LsFlags::QUOTE_ENTRIES;
+            }
+
+            Long("quoting-style") => {
+                settings.quoting = match args.value() {
+                    None => needs_an_argument(),
+
+                    Some(val) => match val.as_str() {
+                        "literal" => QuotingStyle::Literal,
+                        "locale" => QuotingStyle::Locale,
+                        "shell" => QuotingStyle::Shell,
+                        "shell-always" => QuotingStyle::ShellAlways,
+                        "shell-escape" => QuotingStyle::ShellEscape,
+                        "shell-escape-always" => QuotingStyle::ShellEscapeAlways,
+                        "c" => QuotingStyle::C,
+
+                        _ => invalid_argument(),
+                    },
+                }
+            }
+
+            Short('r') | Long("reverse") => {
+                settings.flags |= LsFlags::REVERSE_SORT;
+            }
+
+            Short('R') | Long("recursive") => {
+                settings.flags |= LsFlags::RECURSIVE;
+            }
+
+            Short('s') | Long("size") => {
+                settings.flags |= LsFlags::PRINT_ALLOCATED_SIZE;
+            }
+
+            Short('S') => {
+                settings.order = SortOrder::Size;
+            }
+
+            Long("sort") => {
+                settings.order = if let Some(val) = args.value() {
+                    if let Some(ret) = SortOrder::from_bytes(val.as_str()) {
+                        ret
+                    } else {
+                        invalid_argument()
+                    }
+                } else {
+                    needs_an_argument();
+                }
+            }
+
+            Long("time") => {
+                // todo
+            }
+
+            Long("time-style") => {
+                // todo
+            }
+
+            Short('t') => {
+                // todo
+            }
+
+            Short('T') | Long("tabsize") => {
+                // todo
+            }
+
+            Short('u') => {
+                match (&settings.format, &settings.order) {
+                    (Formatting::Long, SortOrder::AccessTime) => {
+                        // i don't know
+                    }
+
+                    (Formatting::Long, _) => {
+                        settings.order = SortOrder::Name;
+
+                        // "show access time"
+                    }
+
+                    _ => {
+                        settings.order = SortOrder::AccessTime;
+                    }
+                }
+            }
+
+            Short('U') => {
+                settings.order = SortOrder::None;
+                settings.flags |= LsFlags::DIRECTORIES_FIRST;
+            }
+
+            Short('v') => {
+                // what does "natural sort of version numbers" mean...
+            }
+
+            Short('w') | Long("width") => {
+                // limit width via another option...
+            }
+
+            Short('x') => {
+                // needs a new format mode...
+            }
+
+            Short('X') => {
+                settings.order = SortOrder::Extension;
+            }
+
+            Short('Z') | Long("context") => {
+                // i need to learn what is a security context..
+            }
+
+            Long("zero") => {
+                settings.flags |= LsFlags::END_WITH_NUL;
+            }
+
+            Short('1') => {
+                settings.flags |= LsFlags::ONE_FILE_PER_LINE;
+            }
+
+            Long("help") => {
+                // i need help...
+                s_print!(b"TODO: help text");
+            }
+
+            Long("version") => {
+                let text = coreutils::version_text!("ls").as_bytes();
+                s_print!(text);
+            }
+
             _ => {
                 // todo!
             }
@@ -264,126 +426,7 @@ fn parse_arguments() -> Result<(LsConfig, bool)> {
     Ok((settings, any_args))
 }
 
-enum SortOrder {
-    None,
-    Name,
-    Size,
-    Version,
-    Extension,
-    Directory,
-    Width,
-    AccessTime,
-    Time(TimeStampType),
-}
-
-#[non_exhaustive]
-#[repr(u8)]
-enum TimeStampType {
-    FullIso,
-    LongIso,
-    Iso,
-    Locale,
-    // Format
-}
-
-#[repr(u8)]
-enum QuotingStyle {
-    Literal,
-    Locale,
-    Shell,
-    ShellAlways,
-    ShellEscape,
-    ShellEscapeAlways,
-}
-
-#[repr(u8)]
-enum IndicatorStyle {
-    None,
-    Slash,
-    FileType,
-    Classify,
-}
-impl IndicatorStyle {
-    #[inline]
-    fn from_bytes<A>(val: A) -> Option<Self>
-    where
-        A: AsRef<[u8]>,
-    {
-        match val.as_ref() {
-            b"none" => Some(Self::None),
-            b"slash" => Some(Self::Slash),
-            b"file-type" => Some(Self::FileType),
-            b"classify" => Some(Self::Classify),
-
-            _ => None,
-        }
-    }
-}
-
-#[repr(u8)]
-enum Formatting {
-    Long,
-    Horizontal,
-    Across,
-    Commas,
-    SingleCol,
-}
-
-impl Formatting {
-    #[inline]
-    fn from_bytes<A>(val: A) -> Option<Self>
-    where
-        A: AsRef<[u8]>,
-    {
-        match val.as_ref() {
-            b"verbose" | b"long" => Some(Self::Long),
-            b"horizontal" => Some(Self::Horizontal),
-            b"across" => Some(Self::Across),
-            b"commas" => Some(Self::Commas),
-            b"single-column" => Some(Self::Commas),
-
-            _ => None,
-        }
-    }
-}
-
-#[repr(u8)]
-enum When {
-    Never,
-    Auto,
-    Always,
-}
-
-impl When {
-    #[inline]
-    fn from_bytes<A>(val: A) -> Option<Self>
-    where
-        A: AsRef<[u8]>,
-    {
-        match val.as_ref() {
-            b"always" | b"yes" | b"force" => Some(Self::Always),
-            b"never" | b"no" | b"none" => Some(Self::Never),
-            b"auto" | b"tty" | b"if-tty" => Some(Self::Auto),
-
-            _ => None,
-        }
-    }
-}
-
-#[repr(u8)]
-enum Dereference {
-    // follow symlinks listed on the command line
-    Commandline,
-
-    // follow all symlinks in the directory
-    // only if they point to a directory
-    FollowAllDirs,
-
-    // just don't do it.
-    None,
-}
-
-struct LsConfig {
+pub(crate) struct LsConfig {
     // order by which the entries will be sorted.
     order: SortOrder,
 
@@ -423,98 +466,4 @@ struct LsConfig {
 
     // line width.
     width: u16,
-}
-
-const CURRENT_DIR_PATH: &str = ".";
-
-fn main() -> Result {
-    println!("size_of::<LsConfig>() => {}", size_of::<LsConfig>());
-
-    let (settings, any_args) = parse_arguments()?;
-
-    if any_args {
-        todo!()
-    } else {
-        // We received no arguments
-        // therefore we can do the most "basic" action
-        // just listing contents of the current directory.
-        let fd = open(
-            CURRENT_DIR_PATH,
-            OFlags::DIRECTORY | OFlags::RDONLY,
-            Mode::RUSR,
-        )?;
-
-        let dir = Dir::new(fd)?;
-
-        // bad bad bad
-        // FIXME: do not allocate
-        let names = dir
-            .filter_map(Result::ok)
-            .map(|entry| entry.file_name().to_string_lossy().into_owned())
-            .filter(|entry| !entry.starts_with('.'))
-            .collect::<Vec<_>>();
-
-        print_all(names)?;
-    }
-
-    Ok(())
-}
-
-fn needs_an_argument() -> ! {
-    todo!()
-}
-
-fn invalid_argument() -> ! {
-    todo!()
-}
-
-fn get_win_size() -> rustix::termios::Winsize {
-    let stderr_fd = rustix::stdio::stderr();
-    tcgetwinsize(stderr_fd).expect("couldn't get terminal size")
-}
-
-// FIXME: This algorithm to print out lines is incredibly simplistic
-// and slightly worse than the one used in GNU's ls.
-fn print_all(cols: Vec<String>) -> Result {
-    const MIN_COLUMN_WIDTH: u16 = 3;
-
-    let len = cols.len();
-    let stderr_fd = rustix::stdio::stderr();
-    let winsize = tcgetwinsize(stderr_fd).expect("couldn't get terminal size");
-
-    let max_idx = ((winsize.ws_col / 3) / MIN_COLUMN_WIDTH - 1) as usize;
-
-    let max_cols = if max_idx < len { max_idx } else { len };
-
-    print_into_columns(cols.iter().map(String::as_str), max_cols)
-}
-
-fn print_into_columns<I>(iter: I, columns: usize) -> Result
-where
-    I: IntoIterator<Item: AsRef<str> + core::fmt::Display>,
-{
-    let mut stdout = BufWriter::new(stdout());
-    let mut counter = 0;
-    for line in iter {
-        if counter == columns {
-            print!("\n");
-            stdout.write_all(b"\n")?;
-            counter = 0;
-        }
-
-        if counter == columns - 1 {
-            stdout.write_all(line.as_ref().as_bytes())?;
-        } else {
-            stdout.write_all(line.as_ref().as_bytes())?;
-            stdout.write_all(b"  ")?;
-        }
-
-        counter += 1;
-    }
-
-    // fixes the shell returning a "return symbol" at the end.
-    stdout.write_all(b"\n")?;
-    stdout.flush()?;
-
-    Ok(())
 }
