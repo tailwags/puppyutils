@@ -6,13 +6,17 @@ use rustix::{
     fs::{Dir, Mode, OFlags, open},
     termios::tcgetwinsize,
 };
-use std::io::{BufWriter, Write, stdout};
+use std::io::{BufWriter, Stdout, Write, stdout};
 
+const VERSION: &str = coreutils::version_text!("ls");
+const HELP: &str = include_str!("./help");
 const CURRENT_DIR_PATH: &str = ".";
 
 fn main() -> Result {
+    let mut out = BufWriter::new(stdout());
     let winsize = get_win_size();
-    let (cfg, any_args_passed) = settings::parse_arguments(winsize.ws_col)?;
+    let (cfg, any_args_passed) =
+        settings::parse_arguments(winsize.ws_col, &mut out, HELP, VERSION)?;
 
     if any_args_passed {
         // Do this!
@@ -38,7 +42,7 @@ fn main() -> Result {
             .filter(|entry| !entry.starts_with('.'))
             .collect::<Vec<_>>();
 
-        print_all(names)?;
+        print_all(names, out)?;
     }
     Ok(())
 }
@@ -50,7 +54,7 @@ fn get_win_size() -> rustix::termios::Winsize {
 
 // FIXME: This algorithm to print out lines is incredibly simplistic
 // and slightly worse than the one used in GNU's ls.
-fn print_all(cols: Vec<String>) -> Result {
+fn print_all(cols: Vec<String>, stdout: BufWriter<Stdout>) -> Result {
     const MIN_COLUMN_WIDTH: u16 = 3;
 
     let len = cols.len();
@@ -61,14 +65,13 @@ fn print_all(cols: Vec<String>) -> Result {
 
     let max_cols = if max_idx < len { max_idx } else { len };
 
-    print_into_columns(cols.iter().map(String::as_str), max_cols)
+    print_into_columns(cols.iter().map(String::as_str), max_cols, stdout)
 }
 
-fn print_into_columns<I>(iter: I, columns: usize) -> Result
+fn print_into_columns<I>(iter: I, columns: usize, mut stdout: BufWriter<Stdout>) -> Result
 where
     I: IntoIterator<Item: AsRef<str> + core::fmt::Display>,
 {
-    let mut stdout = BufWriter::new(stdout());
     let mut counter = 0;
     for line in iter {
         if counter == columns {

@@ -1,23 +1,13 @@
 #![allow(dead_code)]
+use crate::options::*;
 use coreutils::Result;
 use sap::{
     Argument::{Long, Short},
     Parser,
 };
+use std::io::{BufWriter, Stdout, Write};
 
-use crate::options::*;
 const DEFAULT_BLOCK_SIZE: usize = 512;
-
-macro_rules! s_print {
-    ($expr: expr) => {
-        let mut __stdout = std::io::stdout();
-        {
-            use std::io::Write;
-
-            __stdout.write_all($expr)
-        }?
-    };
-}
 
 fn needs_an_argument() -> ! {
     todo!()
@@ -68,8 +58,14 @@ bitflags::bitflags! {
     }
 }
 
-pub(crate) fn parse_arguments(width: u16) -> Result<(LsConfig, bool)> {
-    let mut any_args = false;
+pub(crate) fn parse_arguments(
+    width: u16,
+    out: &mut BufWriter<Stdout>,
+    help: &'static str,
+    version: &'static str,
+) -> Result<(LsConfig, bool)> {
+    let mut version_or_help = false;
+
     let mut args = Parser::from_env()?;
     let mut settings = LsConfig {
         flags: LsFlags::empty(),
@@ -88,10 +84,6 @@ pub(crate) fn parse_arguments(width: u16) -> Result<(LsConfig, bool)> {
     };
 
     while let Some(arg) = args.forward()? {
-        if !any_args {
-            any_args = true;
-        }
-
         match arg {
             Short('a') | Long("all") => {
                 settings.flags |= LsFlags::NOT_IGNORE_DOTS;
@@ -409,13 +401,19 @@ pub(crate) fn parse_arguments(width: u16) -> Result<(LsConfig, bool)> {
             }
 
             Long("help") => {
-                // i need help...
-                s_print!(b"TODO: help text");
+                out.write_all(help.as_bytes())?;
+                out.flush()?;
+
+                version_or_help = true;
+                break;
             }
 
             Long("version") => {
-                let text = coreutils::version_text!("ls").as_bytes();
-                s_print!(text);
+                out.write_all(version.as_bytes())?;
+                out.flush()?;
+
+                version_or_help = true;
+                break;
             }
 
             _ => {
@@ -424,7 +422,7 @@ pub(crate) fn parse_arguments(width: u16) -> Result<(LsConfig, bool)> {
         }
     }
 
-    Ok((settings, any_args))
+    Ok((settings, version_or_help))
 }
 
 pub(crate) struct LsConfig {
