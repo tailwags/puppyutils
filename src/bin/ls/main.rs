@@ -15,17 +15,11 @@ const CURRENT_DIR_PATH: &str = ".";
 fn main() -> Result {
     let mut out = BufWriter::new(stdout());
     let winsize = get_win_size();
-    let (cfg, any_args_passed) =
+    let (cfg, help_or_version) =
         settings::parse_arguments(winsize.ws_col, &mut out, HELP, VERSION)?;
 
-    if any_args_passed {
-        // Do this!
-        // not panicking to not trigger a SIGILL
-        drop(cfg)
-    } else {
-        // We received no arguments
-        // therefore we can do the most "basic" action
-        // just listing contents of the current directory.
+    if !help_or_version {
+        drop(cfg);
         let fd = open(
             CURRENT_DIR_PATH,
             OFlags::DIRECTORY | OFlags::RDONLY,
@@ -44,6 +38,7 @@ fn main() -> Result {
 
         print_all(names, out)?;
     }
+
     Ok(())
 }
 
