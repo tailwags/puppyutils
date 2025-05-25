@@ -69,4 +69,8 @@ macro_rules! help_text {
     ($name: literal) => {
         include_str!(concat!("../../docs/", $name, ".txt"))
     };
+
+    (Deep, $name: literal) => {
+        include_str!(concat!("../../../docs/", $name, ".txt"))
+    };
 }

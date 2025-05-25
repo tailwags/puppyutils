@@ -9,7 +9,7 @@ use rustix::{
 use std::io::{BufWriter, Stdout, Write, stdout};
 
 const VERSION: &str = coreutils::version_text!("ls");
-const HELP: &str = include_str!("./help");
+const HELP: &str = coreutils::help_text!(Deep, "ls");
 const CURRENT_DIR_PATH: &str = ".";
 
 fn main() -> Result {
