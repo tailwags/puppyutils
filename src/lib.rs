@@ -67,10 +67,6 @@ macro_rules! version_text {
 #[macro_export]
 macro_rules! help_text {
     ($name: literal) => {
-        include_str!(concat!("../../docs/", $name, ".txt"))
-    };
-
-    (Deep, $name: literal) => {
-        include_str!(concat!("../../../docs/", $name, ".txt"))
+        include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/docs/", $name, ".txt"))
     };
 }
