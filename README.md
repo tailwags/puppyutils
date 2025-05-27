@@ -29,6 +29,7 @@ cd puppyutils
 - **`whoami`** - Display current username
 - **`yes`** - Output strings repeatedly
 - **`ls`** - List directory contents (in development)
+- **`mkdir`** - Create directories (in development)
 
 All utilities support `--help` and `--version` flags.
 
