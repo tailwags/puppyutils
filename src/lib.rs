@@ -1,9 +1,12 @@
 use std::{
     fmt::{Debug, Display},
-    io,
+    fs, io,
 };
 
-use rustix::{fs::Mode, process::umask};
+use rustix::{
+    fs::{Mode, RawMode},
+    process::umask,
+};
 
 pub type Result<T = (), E = Exit> = std::result::Result<T, E>;
 
@@ -76,26 +79,31 @@ macro_rules! help_text {
 /// Gets the umask of the calling process
 pub fn get_umask() -> Mode {
     /*
-    FIXME: Behold the umask abomination, a perfect example of UNIX's "let's make everything
-    as backwards and painful as possible" design philosophy. This cursed bitmask lives in
-    kernel space and can ONLY be read by WRITING TO IT because someone in 1973
-    decided that having a simple getter function was too logical. So here we are, doing
+    Historical note: The traditional umask() syscall is a perfect example of UNIX's "let's make
+    everything as backwards and painful as possible" design philosophy. This cursed bitmask
+    lives in kernel space and could ONLY be read by WRITING TO IT because someone in 1973
+    decided that having a simple getter function was too logical. The classic approach required
     the umask shuffle: set it to 0, capture the old value, then set it back like some
-    demented atomic operation that's not actually atomic. I mean who needs threads anyway,
-    it's not like computers will ever be powerful enough to do more things at once,
-    not for hundreds of years at the very least.
+    demented atomic operation that's not actually atomic.
 
-    *sigh*
+    Fortunately, modern Linux (kernel 4.7+, 2016) added umask to /proc/self/status, so we
+    can read it cleanly without the race condition. We fall back to the traditional method
+    for older systems or non-Linux platforms.
 
-    We SHOULD read from /proc/self/status like any sane program except nobody does that?
-    but no - we're stuck with this fossilized turd of an API that makes you modify
-    global state just to observe it. At least on anything older than 2016 which is more common
-    than you'd think, sob
-
-    I HATE UNIX
-    I HATE UNIX
-    I HATE UNIX
+    The old way was truly cursed - modifying global state just to observe it. At least
+    we've mostly escaped that particular circle of UNIX hell on modern systems.
     */
+
+    if let Ok(status) = fs::read_to_string("/proc/self/status") {
+        if let Some(umask) = status
+            .lines()
+            .find_map(|line| RawMode::from_str_radix(line.strip_prefix("Umask:")?.trim(), 8).ok())
+        {
+            return Mode::from_raw_mode(umask);
+        }
+    }
+
+    // Fallback method with a possible race condition
     let current_umask = umask(Mode::empty());
     umask(current_umask);
 
