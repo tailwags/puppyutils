@@ -99,12 +99,12 @@ macro_rules! _cli_impl {
                 Long("version") => {
                     $stdout.write_all($crate::version_text!($name).as_bytes())?;
                     $stdout.flush()?;
-                    return Ok(());
+                    std::process::exit(0);
                 }
                 Long("help") => {
                     $stdout.write_all($crate::help_text!($name).as_bytes())?;
                     $stdout.flush()?;
-                    return Ok(());
+                    std::process::exit(0);
                 }
                 $($item => $matcher,)*
             }
