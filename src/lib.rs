@@ -80,46 +80,73 @@ macro_rules! help_text {
 #[macro_export]
 #[doc(hidden)]
 macro_rules! _cli_impl {
-    ($name:literal, $stdout:ident, $($item:pat => $matcher:expr)*) => {
+    ($name:literal, $stdout:ident, $loop_type:tt, $($item:pat => $matcher:expr)*) => {
         {
-            use std::io::Write;
-            use sap::Argument::*;
-
             let mut arg_parser = sap::Parser::from_env()?;
 
-            while let Some(arg) = arg_parser.forward()? {
-                match arg {
-                    Long("version") => {
-                        $stdout.write_all($crate::version_text!($name).as_bytes())?;
-                        $stdout.flush()?;
-                        return Ok(());
-                    }
-                    Long("help") => {
-                        $stdout.write_all($crate::help_text!($name).as_bytes())?;
-                        $stdout.flush()?;
-                        return Ok(());
-                    }
-                    $($item => $matcher,)*
-                }
-            }
+            $crate::_cli_impl!(arg_parser, $name, $stdout, $loop_type, $($item => $matcher)*);
 
             arg_parser
+        }
+    };
+
+    // TODO: we can prob make a default case that uses while
+    ($args:ident, $name:literal, $stdout:ident, $loop_type:tt, $($item:pat => $matcher:expr)*) => {
+        $loop_type let Some(arg) = $args.forward()? {
+            use std::io::Write;
+            use sap::Argument::*;
+            match arg {
+                Long("version") => {
+                    $stdout.write_all($crate::version_text!($name).as_bytes())?;
+                    $stdout.flush()?;
+                    return Ok(());
+                }
+                Long("help") => {
+                    $stdout.write_all($crate::help_text!($name).as_bytes())?;
+                    $stdout.flush()?;
+                    return Ok(());
+                }
+                $($item => $matcher,)*
+            }
         }
     };
 }
 
 #[macro_export]
 macro_rules! cli {
-    ($name:literal, $stdout:ident, $($item:pat => $matcher:expr)*) => {
-        $crate::_cli_impl!($name, $stdout, $($item => $matcher)*)
+    ($name:literal, $stdout:ident $($item:pat => $matcher:expr)*) => {
+        $crate::_cli_impl!($name, $stdout, while, $($item => $matcher)*)
+    };
+
+    ($name:literal, $stdout:ident, #ignore $($item:pat => $matcher:expr)*) => {
+        $crate::_cli_impl!($name, $stdout, if, $($item => $matcher)* _ => {})
     };
 
     ($name:literal, $stdout:ident, #fall $($item:pat => $matcher:expr)*) => {
-        $crate::_cli_impl!($name, $stdout, $($item => $matcher)* _ => {})
+        $crate::_cli_impl!($name, $stdout, while, $($item => $matcher)* _ => {})
     };
 
     ($name:literal, $stdout:ident, #error $($item:pat => $matcher:expr)*) => {
-        $crate::_cli_impl!($name, $stdout, $($item => $matcher)* arg => return Err(arg.into_error(None).into()))
+        $crate::_cli_impl!($name, $stdout, while, $($item => $matcher)* arg => return Err(arg.into_error(None).into()))
+    };
+}
+
+#[macro_export]
+macro_rules! cli_with_args {
+    ($args:ident, $name:literal, $stdout:ident $($item:pat => $matcher:expr)*) => {
+        $crate::_cli_impl!($args, $name, $stdout, while, $($item => $matcher)*)
+    };
+
+    ($args:ident, $name:literal, $stdout:ident, #ignore $($item:pat => $matcher:expr)*) => {
+        $crate::_cli_impl!($args, $name, $stdout, if, $($item => $matcher)* _ => {})
+    };
+
+    ($args:ident, $name:literal, $stdout:ident, #fall $($item:pat => $matcher:expr)*) => {
+        $crate::_cli_impl!($args, $name, $stdout, while, $($item => $matcher)* _ => {})
+    };
+
+    ($args:ident, $name:literal, $stdout:ident, #error $($item:pat => $matcher:expr)*) => {
+        $crate::_cli_impl!($args, $name, $stdout, while, $($item => $matcher)* arg => return Err(arg.into_error(None).into()))
     };
 }
 
