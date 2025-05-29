@@ -80,14 +80,14 @@ macro_rules! help_text {
 #[macro_export]
 #[doc(hidden)]
 macro_rules! _cli_impl {
-    ($name:literal, $stdout:ident, $loop_type:tt, $($item:pat => $matcher:expr)*) => {
+    ($name:literal, $stdout:ident, $($item:pat => $matcher:expr)*) => {
         {
             use std::io::Write;
             use sap::Argument::*;
 
             let mut arg_parser = sap::Parser::from_env()?;
 
-            $loop_type let Some(arg) = arg_parser.forward()? {
+            while let Some(arg) = arg_parser.forward()? {
                 match arg {
                     Long("version") => {
                         $stdout.write_all($crate::version_text!($name).as_bytes())?;
@@ -110,12 +110,16 @@ macro_rules! _cli_impl {
 
 #[macro_export]
 macro_rules! cli {
-    ($name:literal, $stdout:ident, while, $($item:pat => $matcher:expr)*) => {
-        $crate::_cli_impl!($name, $stdout, while, $($item => $matcher)*)
+    ($name:literal, $stdout:ident, $($item:pat => $matcher:expr)*) => {
+        $crate::_cli_impl!($name, $stdout, $($item => $matcher)*)
     };
 
-    ($name:literal, $stdout:ident, if, $($item:pat => $matcher:expr)*) => {
-        $crate::_cli_impl!($name, $stdout, if, $($item => $matcher)*)
+    ($name:literal, $stdout:ident, #fall $($item:pat => $matcher:expr)*) => {
+        $crate::_cli_impl!($name, $stdout, $($item => $matcher)* _ => {})
+    };
+
+    ($name:literal, $stdout:ident, #error $($item:pat => $matcher:expr)*) => {
+        $crate::_cli_impl!($name, $stdout, $($item => $matcher)* arg => return Err(arg.into_error(None).into()))
     };
 }
 

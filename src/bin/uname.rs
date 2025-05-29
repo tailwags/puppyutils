@@ -22,7 +22,7 @@ fn main() -> Result {
     let mut stdout = stdout();
 
     cli! {
-        "uname", stdout, while,
+        "uname", stdout, #error
         Short('a') | Long("all") => {
             info_mask = Info::all();
         }
@@ -34,7 +34,6 @@ fn main() -> Result {
         Short('p') | Long("processor") => info_mask |= Info::PROCESSOR
         Short('i') | Long("hardware-platform") => info_mask |= Info::HARDWARE_PLATFORM
         Short('o') | Long("operating-system") => info_mask |= Info::OPERATING_SYSTEM
-        arg => return Err(arg.into_error(None).into())
     };
 
     if info_mask.is_empty() {

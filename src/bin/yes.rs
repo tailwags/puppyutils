@@ -13,11 +13,10 @@ fn main() -> Result {
     let mut buffer: Option<Vec<u8>> = None;
 
     let arg_parser = cli! {
-        "yes", stdout, while,
+        "yes", stdout, #error
         Value(value) => {
             extend_buffer(&mut buffer, value.as_bytes().to_vec());
         }
-        arg => return Err(arg.into_error(None).into())
     };
 
     arg_parser
