@@ -1,34 +1,18 @@
 #![feature(exitcode_exit_method)]
 
-use std::{
-    io::{Write, stdout},
-    os::unix::ffi::OsStrExt,
-    process::ExitCode,
-};
+use std::{io::stdout, process::ExitCode};
 
-use coreutils::{Result, help_text, version_text};
-
-const VERSION: &str = version_text!("false");
-const HELP: &str = help_text!("false");
+use coreutils::{Result, cli_with_args};
+use sap::Parser;
 
 fn main() -> Result {
-    let mut args = std::env::args_os();
+    let args = std::env::args_os();
 
     if args.len() == 2 {
-        args.next();
-        if let Some(arg) = args.next() {
-            match arg.as_bytes() {
-                b"--version" => {
-                    stdout().write_all(VERSION.as_bytes())?;
-                    return Ok(());
-                }
-                b"--help" => {
-                    stdout().write_all(HELP.as_bytes())?;
-                    return Ok(());
-                }
-                _ => {}
-            }
-        }
+        let mut stdout = stdout();
+        let mut args_parser = Parser::from_arbitrary(args)?;
+
+        cli_with_args!(args_parser, "false", stdout, #ignore);
     }
 
     ExitCode::FAILURE.exit_process()

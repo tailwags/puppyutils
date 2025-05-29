@@ -1,31 +1,15 @@
-use std::{
-    io::{Write, stdout},
-    os::unix::ffi::OsStrExt,
-};
-
-use coreutils::{Result, help_text, version_text};
-
-const VERSION: &str = version_text!("true");
-const HELP: &str = help_text!("true");
+use coreutils::{Result, cli_with_args};
+use sap::Parser;
+use std::io::stdout;
 
 fn main() -> Result {
-    let mut args = std::env::args_os();
+    let args = std::env::args_os();
 
     if args.len() == 2 {
-        args.next();
-        if let Some(arg) = args.next() {
-            match arg.as_bytes() {
-                b"--version" => {
-                    stdout().write_all(VERSION.as_bytes())?;
-                    return Ok(());
-                }
-                b"--help" => {
-                    stdout().write_all(HELP.as_bytes())?;
-                    return Ok(());
-                }
-                _ => {}
-            }
-        }
+        let mut stdout = stdout();
+        let mut args_parser = Parser::from_arbitrary(args)?;
+
+        cli_with_args!(args_parser, "true", stdout, #ignore);
     }
 
     Ok(())
