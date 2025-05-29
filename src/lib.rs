@@ -47,7 +47,7 @@ impl From<io::Error> for Exit {
 
 #[macro_export]
 macro_rules! version_text {
-    ($name: literal, $authors: literal) => {
+    ($name:literal, $authors:literal) => {
         concat!(
             $name,
             " (puppyutils) ",
@@ -58,7 +58,7 @@ macro_rules! version_text {
         )
     };
 
-    ($name: literal) => {
+    ($name:literal) => {
         concat!(
             $name,
             " (puppyutils) ",
@@ -71,8 +71,51 @@ macro_rules! version_text {
 
 #[macro_export]
 macro_rules! help_text {
-    ($name: literal) => {
+    ($name:literal) => {
         include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/docs/", $name, ".txt"))
+    };
+}
+
+/// Internal helper macro
+#[macro_export]
+#[doc(hidden)]
+macro_rules! _cli_impl {
+    ($name:literal, $stdout:ident, $loop_type:tt, $($item:pat => $matcher:expr)*) => {
+        {
+            use std::io::Write;
+            use sap::Argument::*;
+
+            let mut arg_parser = sap::Parser::from_env()?;
+
+            $loop_type let Some(arg) = arg_parser.forward()? {
+                match arg {
+                    Long("version") => {
+                        $stdout.write_all($crate::version_text!($name).as_bytes())?;
+                        $stdout.flush()?;
+                        return Ok(());
+                    }
+                    Long("help") => {
+                        $stdout.write_all($crate::help_text!($name).as_bytes())?;
+                        $stdout.flush()?;
+                        return Ok(());
+                    }
+                    $($item => $matcher,)*
+                }
+            }
+
+            arg_parser
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! cli {
+    ($name:literal, $stdout:ident, while, $($item:pat => $matcher:expr)*) => {
+        $crate::_cli_impl!($name, $stdout, while, $($item => $matcher)*)
+    };
+
+    ($name:literal, $stdout:ident, if, $($item:pat => $matcher:expr)*) => {
+        $crate::_cli_impl!($name, $stdout, if, $($item => $matcher)*)
     };
 }
 

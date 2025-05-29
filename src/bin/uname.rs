@@ -1,11 +1,7 @@
 use std::io::{Write, stdout};
 
-use coreutils::{Result, help_text, version_text};
+use coreutils::{Result, cli};
 use rustix::system::uname;
-use sap::{
-    Argument::{Long, Short},
-    Parser,
-};
 
 bitflags::bitflags! {
     #[rustfmt::skip]
@@ -21,42 +17,25 @@ bitflags::bitflags! {
     }
 }
 
-const VERSION: &str = version_text!("uname");
-const HELP: &str = help_text!("uname");
-
 fn main() -> Result {
     let mut info_mask = Info::empty();
     let mut stdout = stdout();
 
-    let mut arg_parser = Parser::from_env()?;
-
-    while let Some(arg) = arg_parser.forward()? {
-        match arg {
-            Long("version") => {
-                stdout.write_all(VERSION.as_bytes())?;
-                stdout.flush()?;
-                return Ok(());
-            }
-            Long("help") => {
-                stdout.write_all(HELP.as_bytes())?;
-                stdout.flush()?;
-                return Ok(());
-            }
-            Short('a') | Long("all") => {
-                info_mask = Info::all();
-            }
-            Short('s') | Long("kernel-name") => info_mask |= Info::KERNEL_NAME,
-            Short('n') | Long("nodename") => info_mask |= Info::NODENAME,
-            Short('r') | Long("kernel-release") => info_mask |= Info::KERNEL_RELEASE,
-            Short('v') | Long("kernel-version") => info_mask |= Info::KERNEL_VERSION,
-            Short('m') | Long("machine") => info_mask |= Info::MACHINE,
-            Short('p') | Long("processor") => info_mask |= Info::PROCESSOR,
-            Short('i') | Long("hardware-platform") => info_mask |= Info::HARDWARE_PLATFORM,
-            Short('o') | Long("operating-system") => info_mask |= Info::OPERATING_SYSTEM,
-
-            argument => return Err(argument.into_error(None).into()),
+    cli! {
+        "uname", stdout, while,
+        Short('a') | Long("all") => {
+            info_mask = Info::all();
         }
-    }
+        Short('s') | Long("kernel-name") => info_mask |= Info::KERNEL_NAME
+        Short('n') | Long("nodename") => info_mask |= Info::NODENAME
+        Short('r') | Long("kernel-release") => info_mask |= Info::KERNEL_RELEASE
+        Short('v') | Long("kernel-version") => info_mask |= Info::KERNEL_VERSION
+        Short('m') | Long("machine") => info_mask |= Info::MACHINE
+        Short('p') | Long("processor") => info_mask |= Info::PROCESSOR
+        Short('i') | Long("hardware-platform") => info_mask |= Info::HARDWARE_PLATFORM
+        Short('o') | Long("operating-system") => info_mask |= Info::OPERATING_SYSTEM
+        arg => return Err(arg.into_error(None).into())
+    };
 
     if info_mask.is_empty() {
         info_mask = Info::KERNEL_NAME;

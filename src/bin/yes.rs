@@ -4,43 +4,21 @@ use std::{
     os::unix::ffi::OsStringExt,
 };
 
-use coreutils::{Exit, Result, help_text, version_text};
-use sap::{
-    Argument::{Long, Short, Value},
-    Parser,
-};
-
-const VERSION: &str = version_text!("yes");
-const HELP: &str = help_text!("yes");
+use coreutils::{Result, cli};
 
 fn main() -> Result {
-    let mut arg_parser = Parser::from_env()?;
-
     // No point in locking stdout since we only use it once in this program
     let mut stdout = stdout();
 
     let mut buffer: Option<Vec<u8>> = None;
 
-    while let Some(arg) = arg_parser.forward()? {
-        match arg {
-            Long("version") => {
-                stdout.write_all(VERSION.as_bytes())?;
-                stdout.flush()?;
-
-                return Ok(());
-            }
-            Long("help") => {
-                stdout.write_all(HELP.as_bytes())?;
-                stdout.flush()?;
-
-                return Ok(());
-            }
-            Value(value) => {
-                extend_buffer(&mut buffer, value.as_bytes().to_vec());
-            }
-            Long(_) | Short(_) => return Err(Exit::ArgError(arg.into_error(None))),
+    let arg_parser = cli! {
+        "yes", stdout, while,
+        Value(value) => {
+            extend_buffer(&mut buffer, value.as_bytes().to_vec());
         }
-    }
+        arg => return Err(arg.into_error(None).into())
+    };
 
     arg_parser
         .into_inner()
