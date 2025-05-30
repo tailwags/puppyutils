@@ -1,6 +1,6 @@
 use std::io::stdout;
 
-use coreutils::{Result, cli};
+use puppyutils::{Result, cli};
 fn main() -> Result {
     let mut stdout = stdout();
     cli!("pwd", stdout, #error);

@@ -1,6 +1,6 @@
 use std::io::stdout;
 
-use coreutils::{Result, cli, get_umask};
+use puppyutils::{Result, cli, get_umask};
 use rustix::fs::{Mode, mkdir};
 
 fn main() -> Result {

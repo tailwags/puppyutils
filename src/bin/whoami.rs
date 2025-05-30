@@ -1,7 +1,7 @@
 use std::io::{Write, stderr, stdout};
 
 use acumen::getpwuid;
-use coreutils::{Result, cli};
+use puppyutils::{Result, cli};
 use rustix::process::geteuid;
 
 const CANNOT_FIND_UID: &[u8] = b"cannot find name for user ID: ";

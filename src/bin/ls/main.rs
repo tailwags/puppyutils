@@ -1,7 +1,7 @@
 mod options;
 mod settings;
 
-use coreutils::Result;
+use puppyutils::Result;
 use rustix::{
     fs::{Dir, Mode, OFlags, open},
     termios::tcgetwinsize,

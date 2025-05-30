@@ -1,7 +1,9 @@
 [package]
-name = "coreutils"
-version = "0.1.0"
+name = "puppyutils"
+version = "0.0.1"
 edition = "2024"
+license = "EUPL-1.2"
+authors = ["Matilde Morrone <contact@morrone.dev>"]
 
 [profile.release]
 lto = true

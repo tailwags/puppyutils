@@ -1,6 +1,6 @@
 use std::io::{Write, stdout};
 
-use coreutils::{Result, cli};
+use puppyutils::{Result, cli};
 use rustix::system::uname;
 
 bitflags::bitflags! {

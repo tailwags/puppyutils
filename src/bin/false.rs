@@ -2,7 +2,7 @@
 
 use std::{io::stdout, process::ExitCode};
 
-use coreutils::{Result, cli_with_args};
+use puppyutils::{Result, cli_with_args};
 use sap::Parser;
 
 fn main() -> Result {

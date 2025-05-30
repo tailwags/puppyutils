@@ -4,7 +4,7 @@ use std::{
     os::unix::ffi::OsStringExt,
 };
 
-use coreutils::{Result, cli};
+use puppyutils::{Result, cli};
 
 fn main() -> Result {
     // No point in locking stdout since we only use it once in this program
