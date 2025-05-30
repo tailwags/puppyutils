@@ -6,14 +6,14 @@ use rustix::system::uname;
 bitflags::bitflags! {
     #[rustfmt::skip]
     pub struct Info: u8 {
-        const KERNEL_NAME =         1 << 0;
-        const NODENAME =            1 << 1;
-        const KERNEL_RELEASE =      1 << 2;
-        const KERNEL_VERSION =      1 << 3;
-        const MACHINE =             1 << 4;
-        const PROCESSOR =           1 << 5;
+        const KERNEL_NAME       =   1 << 0;
+        const NODENAME          =   1 << 1;
+        const KERNEL_RELEASE    =   1 << 2;
+        const KERNEL_VERSION    =   1 << 3;
+        const MACHINE           =   1 << 4;
+        const PROCESSOR         =   1 << 5;
         const HARDWARE_PLATFORM =   1 << 6;
-        const OPERATING_SYSTEM =    1 << 7;
+        const OPERATING_SYSTEM  =   1 << 7;
     }
 }
 
@@ -23,17 +23,15 @@ fn main() -> Result {
 
     cli! {
         "uname", stdout, #error
-        Short('a') | Long("all") => {
-            info_mask = Info::all();
-        }
-        Short('s') | Long("kernel-name") => info_mask |= Info::KERNEL_NAME
-        Short('n') | Long("nodename") => info_mask |= Info::NODENAME
-        Short('r') | Long("kernel-release") => info_mask |= Info::KERNEL_RELEASE
-        Short('v') | Long("kernel-version") => info_mask |= Info::KERNEL_VERSION
-        Short('m') | Long("machine") => info_mask |= Info::MACHINE
-        Short('p') | Long("processor") => info_mask |= Info::PROCESSOR
-        Short('i') | Long("hardware-platform") => info_mask |= Info::HARDWARE_PLATFORM
-        Short('o') | Long("operating-system") => info_mask |= Info::OPERATING_SYSTEM
+        Short('a') | Long("all")                => info_mask = Info::all()
+        Short('s') | Long("kernel-name")        => info_mask |= Info::KERNEL_NAME
+        Short('n') | Long("nodename")           => info_mask |= Info::NODENAME
+        Short('r') | Long("kernel-release")     => info_mask |= Info::KERNEL_RELEASE
+        Short('v') | Long("kernel-version")     => info_mask |= Info::KERNEL_VERSION
+        Short('m') | Long("machine")            => info_mask |= Info::MACHINE
+        Short('p') | Long("processor")          => info_mask |= Info::PROCESSOR
+        Short('i') | Long("hardware-platform")  => info_mask |= Info::HARDWARE_PLATFORM
+        Short('o') | Long("operating-system")   => info_mask |= Info::OPERATING_SYSTEM
     };
 
     if info_mask.is_empty() {
