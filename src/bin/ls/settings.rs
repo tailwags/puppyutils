@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use crate::options::*;
+use super::options::*;
 use puppyutils::{Result, cli_with_args};
 use sap::Parser;
 use std::io;

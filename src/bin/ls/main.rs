@@ -10,7 +10,7 @@ use std::io::{self, BufWriter, stdout};
 
 const CURRENT_DIR_PATH: &str = ".";
 
-fn main() -> Result {
+pub fn main() -> Result {
     let mut stdout = stdout();
     let winsize = get_win_size();
     let _cfg = settings::parse_arguments(winsize.ws_col, &mut stdout)?;

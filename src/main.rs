@@ -3,9 +3,9 @@ use std::{borrow::Cow, env::current_exe, os::unix::ffi::OsStrExt, path::PathBuf}
 use puppyutils::{Exit, Result};
 
 pub mod bin {
-    // pub mod ls;FIXME: This does not work because the entrypoint is named main.rs, need to find an elegant solution
-
     pub mod r#false;
+    #[path = "ls/main.rs"]
+    pub mod ls;
     pub mod mkdir;
     pub mod pwd;
     pub mod r#true;
@@ -26,6 +26,7 @@ fn main() -> Result {
 
     match util.as_bytes() {
         b"false" => bin::r#false::main(),
+        b"ls" => bin::ls::main(),
         b"mkdir" => bin::mkdir::main(),
         b"pwd" => bin::pwd::main(),
         b"true" => bin::r#true::main(),
