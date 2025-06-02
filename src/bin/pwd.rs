@@ -6,7 +6,7 @@ use std::{
 
 use puppyutils::{Result, cli};
 use rustix::{fs::stat, process::getcwd};
-fn main() -> Result {
+pub fn main() -> Result {
     let mut stdout = stdout();
 
     let mut logical = false;

@@ -6,7 +6,7 @@ use std::{
 
 use puppyutils::{Result, cli};
 
-fn main() -> Result {
+pub fn main() -> Result {
     // No point in locking stdout since we only use it once in this program
     let mut stdout = stdout();
 

@@ -17,7 +17,7 @@ bitflags::bitflags! {
     }
 }
 
-fn main() -> Result {
+pub fn main() -> Result {
     let mut info_mask = Info::empty();
     let mut stdout = stdout();
 

@@ -3,7 +3,7 @@ use std::io::stdout;
 use puppyutils::{Result, cli, get_umask};
 use rustix::fs::{Mode, mkdir};
 
-fn main() -> Result {
+pub fn main() -> Result {
     let mut stdout = stdout();
 
     let mut dirs = Vec::new();

@@ -2,7 +2,7 @@ use puppyutils::{Result, cli_with_args};
 use sap::Parser;
 use std::io::stdout;
 
-fn main() -> Result {
+pub fn main() -> Result {
     let args = std::env::args_os();
 
     if args.len() == 2 {
