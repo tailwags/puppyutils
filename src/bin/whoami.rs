@@ -9,7 +9,7 @@ const CANNOT_FIND_UID: &[u8] = b"cannot find name for user ID: ";
 fn main() -> Result {
     let mut stdout = stdout();
 
-    cli! ("whoami", stdout, #error);
+    cli!("whoami", stdout, #error);
 
     let uid = geteuid();
 
