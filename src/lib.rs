@@ -1,4 +1,5 @@
 use std::{
+    borrow::Cow,
     fmt::{Debug, Display},
     fs, io,
 };
@@ -16,7 +17,7 @@ pub type Result<T = (), E = Exit> = std::result::Result<T, E>;
 pub enum Exit {
     ArgError(sap::ParsingError),
     IoError(io::Error),
-    Custom(&'static str),
+    Custom(Cow<'static, str>),
 }
 
 impl Debug for Exit {
@@ -44,6 +45,12 @@ impl From<sap::ParsingError> for Exit {
 impl From<io::Error> for Exit {
     fn from(err: io::Error) -> Self {
         Self::IoError(err)
+    }
+}
+
+impl From<&'static str> for Exit {
+    fn from(value: &'static str) -> Self {
+        Self::Custom(Cow::Borrowed(value))
     }
 }
 
