@@ -1,5 +1,6 @@
 mod options;
 mod settings;
+mod traverse;
 
 use puppyutils::Result;
 use rustix::{
@@ -8,15 +9,13 @@ use rustix::{
 };
 use std::io::{self, BufWriter, stdout};
 
-const CURRENT_DIR_PATH: &str = ".";
-
 pub fn main() -> Result {
     let mut stdout = stdout();
     let winsize = get_win_size();
-    let _cfg = settings::parse_arguments(winsize.ws_col, &mut stdout)?;
+    let cfg = settings::parse_arguments(winsize.ws_col, &mut stdout)?;
 
     let fd = open(
-        CURRENT_DIR_PATH,
+        cfg.directory(),
         OFlags::DIRECTORY | OFlags::RDONLY,
         Mode::RUSR,
     )?;

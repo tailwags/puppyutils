@@ -4,6 +4,7 @@ use puppyutils::{Result, cli_with_args};
 use sap::Parser;
 use std::io;
 
+const CURRENT_DIR_PATH: &str = ".";
 const DEFAULT_BLOCK_SIZE: usize = 512;
 
 fn needs_an_argument() -> ! {
@@ -401,42 +402,48 @@ pub(crate) fn parse_arguments<O: io::Write>(width: u16, out: &mut O) -> Result<L
 
 pub(crate) struct LsConfig {
     // order by which the entries will be sorted.
-    order: SortOrder,
+    pub order: SortOrder,
 
     // time of timestamp used by ls
-    time_ty: TimeStampType,
+    pub time_ty: TimeStampType,
 
     // settings that could be contained in bitflags.
-    flags: LsFlags,
+    pub flags: LsFlags,
 
     // quoting style for names
-    quoting: QuotingStyle,
+    pub quoting: QuotingStyle,
 
     // indicator style to append to entry names.
-    indicator: IndicatorStyle,
+    pub indicator: IndicatorStyle,
 
     // specifies how and which symlinks
     // should be dereferenced
-    deref: Dereference,
+    pub deref: Dereference,
 
     // related to --color.
-    color: When,
+    pub color: When,
 
     // related to --hyperlink
-    hyperlink_file_names: When,
+    pub hyperlink_file_names: When,
 
     // related to --classify and -F
-    classify_files: When,
+    pub classify_files: When,
 
     // directory to search through.
-    dir: Option<String>,
+    pub dir: Option<String>,
 
     // block size
-    blk_size: usize,
+    pub blk_size: usize,
 
     // formatting used
-    format: Formatting,
+    pub format: Formatting,
 
     // line width.
-    width: u16,
+    pub width: u16,
+}
+
+impl LsConfig {
+    pub(crate) fn directory(&self) -> &str {
+        self.dir.as_deref().unwrap_or(CURRENT_DIR_PATH)
+    }
 }
