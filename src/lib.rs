@@ -16,6 +16,7 @@ pub type Result<T = (), E = Exit> = std::result::Result<T, E>;
 pub enum Exit {
     ArgError(sap::ParsingError),
     IoError(io::Error),
+    Custom(&'static str),
 }
 
 impl Debug for Exit {
@@ -23,6 +24,7 @@ impl Debug for Exit {
         match self {
             Self::ArgError(err) => Display::fmt(err, f),
             Self::IoError(err) => Display::fmt(err, f),
+            Self::Custom(err) => Display::fmt(err, f),
         }
     }
 }
