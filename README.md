@@ -1,15 +1,13 @@
 # Puppyutils
 
 An efficient and correct implementation of coreutils, util-linux and other core
-Linux system utilities in Rust.
+Linux system utilities written in Rust.
 
 ## Features
 
+- **Memory Safe**: Written in Rust
 - **Compact**: Optimized for minimal binary size and memory footprint
-- **Memory Safe**: Built with Rust to prevent common security vulnerabilities
 - **Fast**: Efficient implementations that outperform traditional utilities
-
-<!-- - **Drop-in Replacement**: 99% compatible with existing scripts and workflows -->
 
 ## Installation
 
@@ -21,6 +19,9 @@ cd puppyutils
 ./build-release.sh
 ```
 
+The project uses a pinned nightly toolchain specified in `rust-toolchain.toml` -
+rustup will automatically install the correct version and components.
+
 ## Available Utilities
 
 - **`true`** - Exit with success status
@@ -28,15 +29,35 @@ cd puppyutils
 - **`uname`** - Display system information
 - **`whoami`** - Display current username
 - **`yes`** - Output strings repeatedly
-- **`ls`** - List directory contents (in development)
-- **`mkdir`** - Create directories (in development)
+- **`pwd`** - Print current working directory
 
-All utilities support `--help` and `--version` flags.
+### In Development
 
-## Contributing
+- **`ls`** - List directory contents (basic functionality implemented)
+- **`mkdir`** - Create directories (missing standard options like -p, -m, -v)
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on contributing to the
-project.
+## Usage
+
+All utilities support standard `--help` and `--version` flags. Options after
+`--` will be ignored and passed as values.
+
+### Project Structure
+
+```
+src/
+├── bin/           # Individual utility implementations
+│   ├── ls/        # Complex utilities may have subdirectories
+│   ├── uname.rs
+│   ├── whoami.rs
+│   └── ...
+├── lib.rs         # Shared library code and macros
+└── main.rs        # Multi-call binary entry point
+```
+
+### Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for
+guidelines on contributing to the project.
 
 ## License
 
