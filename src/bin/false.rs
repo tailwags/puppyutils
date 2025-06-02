@@ -1,11 +1,10 @@
-#![feature(exitcode_exit_method)]
-
-use std::{io::stdout, process::ExitCode};
+use std::{io::stdout, process::exit};
 
 use puppyutils::{Result, cli_with_args};
+use rustix::process::EXIT_FAILURE;
 use sap::Parser;
 
-fn main() -> Result {
+pub fn main() -> Result {
     let args = std::env::args_os();
 
     if args.len() == 2 {
@@ -15,5 +14,5 @@ fn main() -> Result {
         cli_with_args!(args_parser, "false", stdout, #ignore);
     }
 
-    ExitCode::FAILURE.exit_process()
+    exit(EXIT_FAILURE);
 }
