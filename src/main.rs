@@ -33,8 +33,9 @@ fn main() -> Result {
         b"uname" => bin::uname::main(),
         b"whoami" => bin::whoami::main(),
         b"yes" => bin::yes::main(),
-        _ => Err(Exit::Custom(Cow::Owned(
-            util.to_string_lossy().into_owned(), // This works... yeah
-        ))),
+        _ => Err(Exit::Custom(Cow::Owned(format!(
+            "unknown utility \"{}\"",
+            util.to_string_lossy()
+        )))),
     }
 }
