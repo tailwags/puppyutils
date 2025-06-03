@@ -60,10 +60,8 @@ macro_rules! version_text {
         concat!(
             $name,
             " (puppyutils) ",
-            "0.0.1",
-            "\ntodo: license text!", // <- todo
-            "\n\n",
-            $authors
+            "0.0.1\n",
+            "Licensed under the European Union Public Licence (EUPL) <https://eupl.eu/>"
         )
     };
 
@@ -71,9 +69,8 @@ macro_rules! version_text {
         concat!(
             $name,
             " (puppyutils) ",
-            "0.0.1",
-            "\ntodo: license text!", // <- todo
-            "\n",
+            "0.0.1\n",
+            "Licensed under the European Union Public Licence (EUPL) <https://eupl.eu/>\n"
         )
     };
 }
