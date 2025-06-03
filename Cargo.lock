@@ -71,9 +71,9 @@ dependencies = [
 
 [[package]]
 name = "sap"
-version = "0.0.3"
+version = "0.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "679371a814603e6160f2d4e761fe43234f8ba5a255aabfbf74dae76d6af1f07a"
+checksum = "9f4f056dd818eafdd2a1ba7b6fd74ee599410fd4348d1da1b722ec601ff181a7"
 
 [[package]]
 name = "windows-sys"
