@@ -1,0 +1,4 @@
+Usage: wc [OPTION]... [FILE]...
+Print newline, word, and byte counts for each FILE, and a total line if
+more than one FILE is specified.  A word is a nonempty sequence of non white
+space delimited by white space characters or by start or end of input.

@@ -11,6 +11,7 @@ pub mod bin {
     pub mod pwd;
     pub mod r#true;
     pub mod uname;
+    pub mod wc;
     pub mod whoami;
     pub mod yes;
 }
@@ -33,6 +34,7 @@ fn main() -> Result {
         b"pwd" => bin::pwd::main(),
         b"true" => bin::r#true::main(),
         b"uname" => bin::uname::main(),
+        b"wc" => bin::wc::main(),
         b"whoami" => bin::whoami::main(),
         b"yes" => bin::yes::main(),
         _ => Err(Exit::Custom(Cow::Owned(format!(
