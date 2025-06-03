@@ -3,6 +3,7 @@ use std::{borrow::Cow, env::current_exe, os::unix::ffi::OsStrExt, path::PathBuf}
 use puppyutils::{Exit, Result};
 
 pub mod bin {
+    pub mod cat;
     pub mod r#false;
     #[path = "ls/main.rs"]
     pub mod ls;
@@ -25,6 +26,7 @@ fn main() -> Result {
         .ok_or::<Exit>("Failed to get util name".into())?;
 
     match util.as_bytes() {
+        b"calse" => bin::cat::main(),
         b"false" => bin::r#false::main(),
         b"ls" => bin::ls::main(),
         b"mkdir" => bin::mkdir::main(),
