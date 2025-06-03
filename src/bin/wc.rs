@@ -1,6 +1,6 @@
 use std::{
     fs::File,
-    io::{BufRead, BufReader, Write, stdout},
+    io::{BufRead, BufReader, BufWriter, Write, stdout},
 };
 
 use puppyutils::{Result, cli};
@@ -36,6 +36,8 @@ pub fn main() -> Result {
         flags = Flags::LINES | Flags::WORDS | Flags::BYTES;
     }
 
+    let mut stdout = BufWriter::new(stdout);
+
     for path in files {
         let file = File::open(&path)?;
 
@@ -48,6 +50,7 @@ pub fn main() -> Result {
         let mut reader = BufReader::new(file);
 
         let mut line = String::new();
+
         loop {
             let read_bytes = reader.read_line(&mut line)?;
 
@@ -66,9 +69,46 @@ pub fn main() -> Result {
             line.clear();
         }
 
-        let out = format!("  {lines}  {words} {chars} {bytes} {path}\n"); // FIXME: obv we dont wanna format but also this is temporary since we are ignoring the flags
-        stdout.write_all(out.as_bytes())?;
+        let mut first = true;
+
+        let mut write_num = |num: usize| -> Result<()> {
+            if !first {
+                stdout.write_all(b" ")?;
+            }
+            stdout.write_all(itoa::Buffer::new().format(num).as_bytes())?;
+            first = false;
+            Ok(())
+        };
+
+        if flags.contains(Flags::LINES) {
+            write_num(lines)?;
+        }
+
+        if flags.contains(Flags::WORDS) {
+            write_num(words)?;
+        }
+
+        if flags.contains(Flags::CHARS) {
+            write_num(chars)?;
+        }
+
+        if flags.contains(Flags::BYTES) {
+            write_num(bytes)?;
+        }
+
+        stdout.write_all(b" ")?;
+        stdout.write_all(path.as_bytes())?;
+        stdout.write_all(b"\n")?;
     }
 
     Ok(())
+}
+
+fn _count_padding(mut n: usize) -> usize {
+    let mut count = 0;
+    while n % 10 == 0 {
+        n /= 10;
+        count += 1;
+    }
+    count
 }
