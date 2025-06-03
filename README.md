@@ -31,10 +31,21 @@ rustup will automatically install the correct version and components.
 - **`yes`** - Output strings repeatedly
 - **`pwd`** - Print current working directory
 
-### In Development
+### Currently in Development
 
 - **`ls`** - List directory contents (basic functionality implemented)
+- **`cat`** - Concatenate and display files (basic functionality implemented,
+  missing most options)
 - **`mkdir`** - Create directories (missing standard options like -p, -m, -v)
+
+### Missing
+
+The project is still in early development, so the majority of standard Unix
+utilities remain unimplemented. Rather than maintaining an exhaustive list of
+missing commands, we're focusing on building a solid foundation with the core
+utilities first. As the project matures and more commands are added, this
+section will be expanded to highlight specific gaps and implementation
+priorities.
 
 ## Usage
 
