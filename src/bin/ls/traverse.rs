@@ -1,9 +1,21 @@
+// <<<<<<< HEAD
 use super::options::Formatting;
 use super::settings::{LsConfig, LsFlags};
 use super::sorting;
 use acumen::{Passwd, getpwuid};
 use core::cmp;
 use puppyutils::Result;
+// =======
+// use crate::options::Formatting;
+// use crate::settings::{LsConfig, LsFlags};
+// use acumen::getpwuid;
+// use puppyutils::Result;
+// use rustix::ffi;
+// use rustix::fs::{AtFlags, Dir, DirEntry, Mode, OFlags, Stat, Uid, open, statat};
+use rustix::time::{self, Timespec};
+// use std::io::Write;
+// use std::os::fd::OwnedFd;
+// >>>>>>> 9229b56 (functional long format for ls)
 
 use rustix::time::{self, Timespec};
 use rustix::ffi;
@@ -40,6 +52,7 @@ pub(crate) struct Printer<'a, O> {
     stdout: &'a mut O,
     cfg: LsConfig,
     fd: OwnedFd,
+    base_dir: String,
 
     // longest file size
     longest_size: u64,
@@ -65,6 +78,7 @@ impl<'a, O> Printer<'a, O> {
         let fd = open(base_dir, OFlags::DIRECTORY | OFlags::RDONLY, Mode::RUSR)?;
 
         let res = Self {
+            base_dir: base_dir.to_owned(),
             stdout,
             cfg,
             fd,
@@ -573,7 +587,6 @@ where
 
         write!(out, "{size:>width$} ")?;
     }
-
     Ok(())
 }
 
@@ -726,7 +739,11 @@ impl Date {
     /// if `buf` doesn't have a length of atleast 2
     /// the day written may be malformed.
     pub(crate) fn day_with_padding(&self, mut buf: &mut [u8]) -> Result {
-        write!(buf, "{:>2}", self.days).map_err(Into::into)
+        if self.days < 10 {
+            write!(buf, " ")?;
+        };
+
+        write!(buf, "{}", self.days).map_err(Into::into)
     }
 }
 
@@ -740,18 +757,18 @@ fn number_length_u64(n: u64) -> u32 {
         10000..=99999 => 5,
         100000..=999999 => 6,
         1000000..=9999999 => 7,
-        10000000..=99999999 => 8,
-        100000000..=999999999 => 9,
-        1000000000..=9999999999 => 10,
-        10000000000..=99999999999 => 11,
-        100000000000..=999999999999 => 12,
-        1000000000000..=9999999999999 => 13,
-        10000000000000..=99999999999999 => 14,
-        100000000000000..=999999999999999 => 15,
-        1000000000000000..=9999999999999999 => 16,
-        10000000000000000..=99999999999999999 => 17,
-        100000000000000000..=999999999999999999 => 18,
-        1000000000000000000..=9999999999999999999 => 19,
-        10000000000000000000..=u64::MAX => 20,
+        100000000..=999999999 => 8,
+        1000000000..=9999999999 => 9,
+        10000000000..=99999999999 => 10,
+        100000000000..=999999999999 => 11,
+        1000000000000..=9999999999999 => 12,
+        10000000000000..=99999999999999 => 13,
+        100000000000000..=999999999999999 => 14,
+        1000000000000000..=9999999999999999 => 15,
+        10000000000000000..=99999999999999999 => 16,
+        100000000000000000..=999999999999999999 => 17,
+        1000000000000000000..=9999999999999999999 => 18,
+        10000000000000000000..=18446744073709551615 => 19,
+        _ => unsafe { std::hint::unreachable_unchecked() },
     }
 }
