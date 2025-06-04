@@ -2,6 +2,7 @@
 
 use std::{fmt::Display, num::NonZero};
 #[repr(u8)]
+#[derive(Copy, Clone)]
 pub(crate) enum SortOrder {
     None,
     Name,

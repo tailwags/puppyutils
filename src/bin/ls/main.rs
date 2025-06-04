@@ -4,7 +4,6 @@ pub(crate) mod sorting;
 pub(crate) mod traverse;
 
 use traverse::Printer;
-
 use puppyutils::Result;
 use rustix::{
     fs::{Dir, Mode, OFlags, open},

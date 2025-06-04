@@ -1,9 +1,21 @@
+// <<<<<<< HEAD
 use super::options::Formatting;
 use super::settings::{LsConfig, LsFlags};
 use super::sorting;
 use acumen::{Passwd, getpwuid};
 use core::cmp;
 use puppyutils::Result;
+// =======
+// use crate::options::Formatting;
+// use crate::settings::{LsConfig, LsFlags};
+// use acumen::getpwuid;
+// use puppyutils::Result;
+// use rustix::ffi;
+// use rustix::fs::{AtFlags, Dir, DirEntry, Mode, OFlags, Stat, Uid, open, statat};
+use rustix::time::{self, Timespec};
+// use std::io::Write;
+// use std::os::fd::OwnedFd;
+// >>>>>>> 9229b56 (functional long format for ls)
 
 use rustix::fs::statx;
 use rustix::{
@@ -38,6 +50,7 @@ pub(crate) struct Printer<'a, O> {
     stdout: &'a mut O,
     cfg: LsConfig,
     fd: OwnedFd,
+    base_dir: String,
 
     // longest file size
     longest_size: u64,
@@ -63,6 +76,7 @@ impl<'a, O> Printer<'a, O> {
         let fd = open(base_dir, OFlags::DIRECTORY | OFlags::RDONLY, Mode::RUSR)?;
 
         let res = Self {
+            base_dir: base_dir.to_owned(),
             stdout,
             cfg,
             fd,
@@ -206,7 +220,6 @@ impl<O: Write> Printer<'_, O> {
 
         match self.cfg.format {
             Formatting::Long => self.print_entry_long(display),
-
             _ => todo!(),
         }
     }
@@ -522,6 +535,7 @@ fn print_size<O>(
 where
     O: Write + ?Sized,
 {
+    let mut buf: [u8; 128] = [0; 128];
     if human_readable {
         let mut buf: [u8; HUMAN_READABLE_SIZE_LENGTH] = [0_u8; HUMAN_READABLE_SIZE_LENGTH];
         humanize_number(&mut (&mut buf as &mut [u8]), size, si_units);
@@ -535,7 +549,6 @@ where
 
         write!(out, "{size:>width$} ")?;
     }
-
     Ok(())
 }
 
@@ -576,6 +589,68 @@ where
     }
 
     write!(&mut *buf, "{:.1}{}", floating_num, UNITS[scale]).expect("infallible");
+}
+
+/// Converts an unix timestamp to a `Date`
+fn unix_timestamp_to_date(seconds: i64) -> Date {
+    const MONTH_DAYS: [i64; 12] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    let mut minutes = seconds / 60;
+    let seconds = seconds - minutes * 60;
+
+    let mut hours = minutes / 60;
+    minutes -= hours * 60;
+
+    let mut days = hours / 24;
+    hours -= days * 24;
+
+    let mut year = 1970; // unix starts from 1970
+    let mut week_day: i64 = 4; // on a thursday
+
+    let mut month = 0; // this will be overwritten anyway
+
+    loop {
+        let leap_year = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+        let days_in_a_year = 365 + i64::from(leap_year);
+
+        if days >= days_in_a_year {
+            week_day += 1 + i64::from(leap_year);
+            days -= days_in_a_year;
+
+            if week_day >= 7 {
+                week_day -= 7;
+                year += 1;
+            }
+        } else {
+            week_day += days;
+            week_day %= days;
+
+            for (month_index, month_day) in MONTH_DAYS.iter().enumerate() {
+                month = month_index as i64;
+                let cmp = *month_day + i64::from(month_index == 1 && leap_year);
+
+                if days >= cmp {
+                    days -= cmp;
+                } else {
+                    break;
+                }
+            }
+
+            break;
+        }
+    }
+
+    dbg!(days);
+
+    month += 1;
+
+    Date {
+        year,
+        month,
+        days,
+        hours,
+        minutes,
+        seconds,
+    }
 }
 
 pub(crate) struct Date {
@@ -626,75 +701,14 @@ impl Date {
     /// if `buf` doesn't have a length of atleast 2
     /// the day written may be malformed.
     pub(crate) fn day_with_padding(&self, mut buf: &mut [u8]) -> Result {
-        write!(buf, "{:>2}", self.days).map_err(Into::into)
+        if self.days < 10 {
+            write!(buf, " ")?;
+        };
+
+        write!(buf, "{}", self.days).map_err(Into::into)
     }
 }
 
-/// Converts an unix timestamp to a `Date`
-fn unix_timestamp_to_date(seconds: i64) -> Date {
-    const MONTH_DAYS: [i64; 12] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    let mut minutes = seconds / 60;
-    let seconds = seconds - minutes * 60;
-
-    let mut hours = minutes / 60;
-    minutes -= hours * 60;
-
-    let mut days = hours / 24;
-    hours -= days * 24;
-
-    let mut year = 1970; // unix starts from 1970
-    let mut week_day: i64 = 4; // on a thursday
-
-    let mut month = 0; // this will be overwritten anyway
-
-    loop {
-        let leap_year = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
-        let days_in_a_year = 365 + i64::from(leap_year);
-
-        if days >= days_in_a_year {
-            week_day += 1 + i64::from(leap_year);
-            days -= days_in_a_year;
-
-            if week_day >= 7 {
-                week_day -= 7;
-                year += 1;
-            }
-        } else {
-            week_day += days;
-            week_day %= days;
-
-            for (month_index, month_day) in MONTH_DAYS.iter().enumerate() {
-                month = month_index as i64;
-                let cmp = *month_day + i64::from(month_index == 1 && leap_year);
-
-                dbg!(cmp);
-
-                if days >= cmp {
-                    days -= cmp;
-                } else {
-                    break;
-                }
-            }
-
-            break;
-        }
-    }
-
-    dbg!(days);
-
-    month += 1;
-
-    Date {
-        year,
-        month,
-        days,
-        hours,
-        minutes,
-        seconds,
-    }
-}
-
-/// Calculates the text length of a number
 #[inline]
 fn number_length_u64(n: u64) -> u32 {
     match n {
@@ -705,18 +719,18 @@ fn number_length_u64(n: u64) -> u32 {
         10000..=99999 => 5,
         100000..=999999 => 6,
         1000000..=9999999 => 7,
-        10000000..=99999999 => 8,
-        100000000..=999999999 => 9,
-        1000000000..=9999999999 => 10,
-        10000000000..=99999999999 => 11,
-        100000000000..=999999999999 => 12,
-        1000000000000..=9999999999999 => 13,
-        10000000000000..=99999999999999 => 14,
-        100000000000000..=999999999999999 => 15,
-        1000000000000000..=9999999999999999 => 16,
-        10000000000000000..=99999999999999999 => 17,
-        100000000000000000..=999999999999999999 => 18,
-        1000000000000000000..=9999999999999999999 => 19,
-        10000000000000000000..=u64::MAX => 20,
+        100000000..=999999999 => 8,
+        1000000000..=9999999999 => 9,
+        10000000000..=99999999999 => 10,
+        100000000000..=999999999999 => 11,
+        1000000000000..=9999999999999 => 12,
+        10000000000000..=99999999999999 => 13,
+        100000000000000..=999999999999999 => 14,
+        1000000000000000..=9999999999999999 => 15,
+        10000000000000000..=99999999999999999 => 16,
+        100000000000000000..=999999999999999999 => 17,
+        1000000000000000000..=9999999999999999999 => 18,
+        10000000000000000000..=18446744073709551615 => 19,
+        _ => unsafe { std::hint::unreachable_unchecked() },
     }
 }

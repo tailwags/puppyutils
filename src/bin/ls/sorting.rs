@@ -1,5 +1,5 @@
-use crate::options::SortOrder;
-use crate::traverse::LsDisplay;
+use super::options::SortOrder;
+use super::traverse::LsDisplay;
 use core::cmp::Ordering;
 
 pub(crate) fn sorting_fn(order: SortOrder) -> fn(&LsDisplay, &LsDisplay) -> Ordering {

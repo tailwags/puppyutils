@@ -25,5 +25,6 @@ rustix = { version = "1.0.7", features = [
     "termios",
     "fs",
     "stdio",
+    "time",
 ] }
 sap = "0.0.5"
