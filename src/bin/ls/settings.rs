@@ -2,7 +2,7 @@
 use super::options::*;
 use puppyutils::{Result, cli_with_args};
 use sap::Parser;
-use std::io;
+use std::{io, num::NonZero, os::unix::ffi::OsStrExt};
 
 const CURRENT_DIR_PATH: &str = ".";
 const DEFAULT_BLOCK_SIZE: usize = 512;
@@ -73,6 +73,7 @@ pub(crate) fn parse_arguments<O: io::Write>(width: u16, out: &mut O) -> Result<L
         blk_size: DEFAULT_BLOCK_SIZE,
         format: Formatting::Horizontal, // default seems to be horizontal
         width,
+        size_unit: None,
     };
 
     cli_with_args! {
@@ -94,10 +95,27 @@ pub(crate) fn parse_arguments<O: io::Write>(width: u16, out: &mut O) -> Result<L
         }
 
         Long("block-size") => {
-            if let Some(_arg) = args.value() {
-                // do the block-size
-            } else {
-                needs_an_argument();
+            // use crate::options::SizeParseError;
+
+            if let Some(arg) = args.value() {
+                match size_arg_to_multiplier(arg.as_bytes()) {
+                    Err(err) => match err {
+                        SizeParseError::TooLarge(arg) => {
+                            todo!()
+                        }
+
+                        SizeParseError::InvalidSuffix(arg) => {
+                            todo!()
+                        }
+
+                        SizeParseError::InvalidArgument(arg) => {
+                            todo!()
+                        }
+
+                    }
+
+                    Ok(val) => settings.size_unit = Some(val)
+                }
             }
         }
 
@@ -440,6 +458,9 @@ pub(crate) struct LsConfig {
 
     // line width.
     pub width: u16,
+
+    // size from `--block-size`
+    pub size_unit: Option<NonZero<u64>>,
 }
 
 impl LsConfig {

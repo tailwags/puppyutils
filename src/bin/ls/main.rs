@@ -1,6 +1,9 @@
-mod options;
-mod settings;
-mod traverse;
+pub(crate) mod options;
+pub(crate) mod settings;
+pub(crate) mod sorting;
+pub(crate) mod traverse;
+
+use traverse::Printer;
 
 use puppyutils::Result;
 use rustix::{
@@ -9,31 +12,36 @@ use rustix::{
 };
 use std::io::{self, BufWriter, stdout};
 
+const CURRENT_DIR_PATH: &str = ".";
+
 pub fn main() -> Result {
     let mut stdout = stdout();
     let winsize = get_win_size();
     let cfg = settings::parse_arguments(winsize.ws_col, &mut stdout)?;
 
-    let fd = open(
-        cfg.directory(),
-        OFlags::DIRECTORY | OFlags::RDONLY,
-        Mode::RUSR,
-    )?;
+    // let fd = open(
+    //     cfg.directory(),
+    //     OFlags::DIRECTORY | OFlags::RDONLY,
+    //     Mode::RUSR,
+    // )?;
 
-    let dir = Dir::new(fd)?;
+    // let dir = Dir::new(fd)?;
 
     // bad bad bad
     // FIXME: do not allocate
-    let names = dir
-        .filter_map(Result::ok)
-        .map(|entry| entry.file_name().to_string_lossy().into_owned())
-        .filter(|entry| !entry.starts_with('.'))
-        .collect::<Vec<_>>();
+    // let names = dir
+    //     .filter_map(Result::ok)
+    //     .map(|entry| entry.file_name().to_string_lossy().into_owned())
+    //     .filter(|entry| !entry.starts_with('.'))
+    //     .collect::<Vec<_>>();
 
-    let mut stdout = BufWriter::new(stdout);
+    // let mut stdout = BufWriter::new(stdout);
 
-    print_all(names, &mut stdout)?;
+    // print_all(names, &mut stdout)?;
 
+    let mut printer = Printer::new(cfg, &mut stdout);
+
+    printer?.traverse()?;
     Ok(())
 }
 
