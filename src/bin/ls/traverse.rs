@@ -1,30 +1,20 @@
-// <<<<<<< HEAD
 use super::options::Formatting;
 use super::settings::{LsConfig, LsFlags};
 use super::sorting;
 use acumen::{Passwd, getpwuid};
 use core::cmp;
 use puppyutils::Result;
-// =======
-// use crate::options::Formatting;
-// use crate::settings::{LsConfig, LsFlags};
-// use acumen::getpwuid;
-// use puppyutils::Result;
-// use rustix::ffi;
-// use rustix::fs::{AtFlags, Dir, DirEntry, Mode, OFlags, Stat, Uid, open, statat};
 use rustix::time::{self, Timespec};
-// use std::io::Write;
-// use std::os::fd::OwnedFd;
-// >>>>>>> 9229b56 (functional long format for ls)
+use rustix::ffi;
+use rustix::process;
+use rustix::fs::{AtFlags, Dir, Mode, OFlags, Statx, StatxFlags, Uid, open, statx};
 
-use rustix::fs::statx;
-use rustix::{
-    ffi,
-    fs::{AtFlags, Dir, Mode, OFlags, Statx, StatxFlags, Uid, open},
-};
 
+use std::ffi::CString;
 use std::ffi::CStr;
-use std::{ffi::CString, io::Write, os::fd::OwnedFd};
+use std::io::Write;
+use std::ops::Not;
+use std::os::fd::OwnedFd;
 
 /* File type masks */
 const SOCKET: u16 = 0o0140000;
@@ -549,6 +539,7 @@ where
 
         write!(out, "{size:>width$} ")?;
     }
+
     Ok(())
 }
 
