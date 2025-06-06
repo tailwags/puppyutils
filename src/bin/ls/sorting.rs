@@ -142,4 +142,3 @@ fn sort_by_version(lhs: &LsDisplay, rhs: &LsDisplay) -> Ordering {
     }
     todo!()
 }
-
