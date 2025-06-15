@@ -185,6 +185,44 @@ impl<O: Write> Printer<'_, O> {
             }
         }
 
+        // find the longest values
+        for display in &mut displays {
+            // we need the longest:
+            // size
+            // symlink amount
+            // user name
+            // group name
+
+            if let Some(ref stat) = display.stat {
+                if self.human_readable() {
+                    self.longest_size = HUMAN_READABLE_SIZE_LENGTH as u64
+                } else {
+                    self.longest_size = cmp::max(
+                        self.longest_size,
+                        number_length_u64(stat.stx_size) as u64,
+                    )
+                }
+
+                // maybe check if you actually need the user/group name
+                if let Some(passwd) = getpwuid(Uid::from_raw(stat.stx_uid)) {
+                    self.longest_owner = cmp::max(self.longest_owner, passwd.name.len());
+
+                    display.passwd = Some(passwd) // unwrapping here is weird but we need the name length
+                } else {
+                    unreachable!("unable to obtain passwd for this uid") // redundant however nice for debugging
+                }
+
+                // group name
+                self.longest_group_name = 7;
+
+                // symlink amount
+                self.longest_symlink = cmp::max(
+                    self.longest_symlink,
+                    number_length_u64(stat.stx_nlink.into()) as usize,
+                );
+            }
+        }
+
         for display in displays {
             self.print_entry(display)?
         }
@@ -319,6 +357,7 @@ impl<O: Write> Printer<'_, O> {
 
             displays.push(display)
         }
+
         Ok(())
     }
 
