@@ -336,8 +336,6 @@ impl<O: Write> Printer<'_, O> {
                         | StatxFlags::NLINK,
                 )?;
 
-                dbg!(stat.stx_ctime);
-
                 if self.is_long_format() {
                     let new_size = if self.human_readable() {
                         HUMAN_READABLE_SIZE_LENGTH
