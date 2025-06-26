@@ -27,7 +27,7 @@ fn main() -> Result {
         .ok_or::<Exit>("Failed to get util name".into())?;
 
     match util.as_bytes() {
-        b"calse" => bin::cat::main(),
+        b"cat" => bin::cat::main(),
         b"false" => bin::r#false::main(),
         b"ls" => bin::ls::main(),
         b"mkdir" => bin::mkdir::main(),
