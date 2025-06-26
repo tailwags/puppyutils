@@ -174,13 +174,12 @@ pub fn get_umask() -> Mode {
     we've mostly escaped that particular circle of UNIX hell on modern systems.
     */
 
-    if let Ok(status) = fs::read_to_string("/proc/self/status") {
-        if let Some(umask) = status
+    if let Ok(status) = fs::read_to_string("/proc/self/status")
+        && let Some(umask) = status
             .lines()
             .find_map(|line| RawMode::from_str_radix(line.strip_prefix("Umask:")?.trim(), 8).ok())
-        {
-            return Mode::from_raw_mode(umask);
-        }
+    {
+        return Mode::from_raw_mode(umask);
     }
 
     // Fallback method with a possible race condition
