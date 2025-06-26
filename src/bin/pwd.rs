@@ -6,6 +6,7 @@ use std::{
 
 use puppyutils::{Result, cli};
 use rustix::{fs::stat, process::getcwd};
+
 pub fn main() -> Result {
     let mut stdout = stdout();
 
