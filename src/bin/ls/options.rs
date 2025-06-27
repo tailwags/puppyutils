@@ -212,10 +212,7 @@ pub(crate) fn size_arg_to_multiplier(arg: &[u8]) -> Result<NonZero<u64>, SizePar
     );
 
     match unit.checked_mul(multiplier) {
-        None => {
-            let err = SizeParseError::TooLarge(arg);
-            return Err(err);
-        }
+        None => Err(SizeParseError::TooLarge(arg)),
 
         // SAFETY:
         //

@@ -2,7 +2,8 @@
 use super::options::*;
 use puppyutils::{Result, cli_with_args};
 use sap::Parser;
-use std::{io, num::NonZero, os::unix::ffi::OsStrExt};
+use std::io;
+use std::num::NonZero;
 
 const CURRENT_DIR_PATH: &str = ".";
 const DEFAULT_BLOCK_SIZE: usize = 512;
@@ -100,15 +101,15 @@ pub(crate) fn parse_arguments<O: io::Write>(width: u16, out: &mut O) -> Result<L
             if let Some(arg) = args.value() {
                 match size_arg_to_multiplier(arg.as_bytes()) {
                     Err(err) => match err {
-                        SizeParseError::TooLarge(arg) => {
+                        SizeParseError::TooLarge(_arg) => {
                             todo!()
                         }
 
-                        SizeParseError::InvalidSuffix(arg) => {
+                        SizeParseError::InvalidSuffix(_arg) => {
                             todo!()
                         }
 
-                        SizeParseError::InvalidArgument(arg) => {
+                        SizeParseError::InvalidArgument(_arg) => {
                             todo!()
                         }
 
