@@ -1,2 +1,7 @@
 Usage: mkdir [OPTION]... DIRECTORY...
 Create the DIRECTORY(ies), if they do not already exist.
+
+      --help     display this help and exit
+      --version  output version information and exit
+
+Each DIRECTORY is created with mode 0777 modified by the umask.

@@ -1,4 +1,11 @@
 Usage: wc [OPTION]... [FILE]...
-Print newline, word, and byte counts for each FILE, and a total line if
-more than one FILE is specified.  A word is a nonempty sequence of non white
-space delimited by white space characters or by start or end of input.
+Print newline, word, and byte counts for each FILE.  A word is a nonempty 
+sequence of non white space delimited by white space characters or by start 
+or end of input.
+
+  -c, --bytes    print the byte counts
+  -m, --chars    print the character counts
+  -l, --lines    print the newline counts
+  -w, --words    print the word counts
+      --help     display this help and exit
+      --version  output version information and exit

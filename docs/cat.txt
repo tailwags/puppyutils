@@ -1,2 +1,7 @@
-Usage: cat [OPTION]... [FILE]...
+Usage: cat [FILE]...
 Concatenate FILE(s) to standard output.
+
+      --help     display this help and exit
+      --version  output version information and exit
+
+With no FILE, or when FILE is -, read standard input.
