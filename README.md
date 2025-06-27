@@ -53,20 +53,7 @@ priorities.
 All utilities support standard `--help` and `--version` flags. Options after
 `--` will be ignored and passed as values.
 
-### Project Structure
-
-```
-src/
-├── bin/           # Individual utility implementations
-│   ├── ls/        # Complex utilities may have subdirectories
-│   ├── uname.rs
-│   ├── whoami.rs
-│   └── ...
-├── lib.rs         # Shared library code and macros
-└── main.rs        # Multi-call binary entry point
-```
-
-### Contributing
+## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for
 guidelines on contributing to the project.
