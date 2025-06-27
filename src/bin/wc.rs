@@ -51,7 +51,7 @@ pub fn main() -> Result {
         Short('m') | Long("chars") => flags |= Flags::CHARS
         Short('c') | Long("bytes") => flags |= Flags::BYTES
         Value(value) => {
-            files.push(value.to_owned());
+            files.push(value.into_owned());
         }
     };
 
@@ -63,7 +63,7 @@ pub fn main() -> Result {
 
     // If no files, read from stdin
     if files.is_empty() {
-        files.push("-".to_string());
+        files.push("-".into());
     }
 
     for path in files {

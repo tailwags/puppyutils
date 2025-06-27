@@ -12,7 +12,7 @@ pub fn main() -> Result {
     cli! {
         "cat", stdout, #error
         Value(value) => {
-            files.push(value.to_owned());
+            files.push(value.into_owned());
         }
     };
 
@@ -30,7 +30,7 @@ pub fn main() -> Result {
                 let mut stdin = BufReader::new(stdin());
                 io::copy(&mut stdin, &mut stdout)?;
             } else {
-                let mut reader = BufReader::new(File::open(&file_path)?); // Is it fine to error here? or should we keep going
+                let mut reader = BufReader::new(File::open(file_path)?); // Is it fine to error here? or should we keep going
                 io::copy(&mut reader, &mut stdout)?;
             }
         }

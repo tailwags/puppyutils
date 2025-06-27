@@ -11,7 +11,7 @@ pub fn main() -> Result {
     cli! {
         "mkdir", stdout, #error
         Value(value) => {
-            dirs.push(value.to_owned()); // FIXME: I am not a fan of all this allocation but we can't easily move out of the argument parser
+            dirs.push(value.into_owned()); // FIXME: I am not a fan of all this allocation but we can't easily move out of the argument parser
         }
     };
 

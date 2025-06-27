@@ -5,7 +5,7 @@ use rustix::process::EXIT_FAILURE;
 use sap::Parser;
 
 pub fn main() -> Result {
-    let args = std::env::args_os();
+    let args = std::env::args();
 
     if args.len() == 2 {
         let mut stdout = stdout();
