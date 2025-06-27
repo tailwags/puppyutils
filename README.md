@@ -30,6 +30,7 @@ rustup will automatically install the correct version and components.
 - **`whoami`** - Display current username
 - **`yes`** - Output strings repeatedly
 - **`pwd`** - Print current working directory
+- **`tty`** - Print terminal name
 
 ### Currently in Development
 
