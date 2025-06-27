@@ -10,6 +10,7 @@ pub mod bin {
     pub mod mkdir;
     pub mod pwd;
     pub mod r#true;
+    pub mod tty;
     pub mod uname;
     pub mod wc;
     pub mod whoami;
@@ -33,6 +34,7 @@ fn main() -> Result {
         b"mkdir" => bin::mkdir::main(),
         b"pwd" => bin::pwd::main(),
         b"true" => bin::r#true::main(),
+        b"tty" => bin::tty::main(),
         b"uname" => bin::uname::main(),
         b"wc" => bin::wc::main(),
         b"whoami" => bin::whoami::main(),
