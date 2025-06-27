@@ -23,7 +23,7 @@ fn count_lines<R: BufRead>(mut reader: R) -> Result<(usize, usize, usize, usize)
 
     loop {
         let read_bytes = reader.read_line(&mut line)?;
-        
+
         if read_bytes == 0 {
             break;
         }
