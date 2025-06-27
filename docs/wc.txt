@@ -9,3 +9,5 @@ or end of input.
   -w, --words    print the word counts
       --help     display this help and exit
       --version  output version information and exit
+
+With no FILE, or when FILE is -, read standard input.
