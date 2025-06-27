@@ -1,0 +1,10 @@
+Usage: tty [OPTION]...
+Print the file name of the terminal connected to standard input.
+
+  -s, --silent, --quiet  print nothing, only return an exit status
+      --help             display this help and exit
+      --version          output version information and exit
+
+Exit status:
+  0 if the standard input is a terminal
+  1 if the standard input is not a terminal
