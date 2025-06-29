@@ -6,21 +6,21 @@ use std::{
 use puppyutils::{Result, cli};
 
 pub fn main() -> Result {
-    // No point in locking stdout since we only use it once in this program
     let mut stdout = stdout();
 
-    let mut buffer = None;
+    let mut buffer: Option<String> = None;
 
-    let arg_parser = cli! {
+    cli! {
         "yes", stdout, #error
         Value(value) => {
-            extend_buffer(&mut buffer, value);
+             if let Some(ref mut buffer) = buffer {
+                buffer.push(' '); // Manually put the space
+                buffer.push_str(value.as_ref());
+            } else {
+                buffer = Some(value.into_owned())
+            }
         }
     };
-
-    arg_parser
-        .into_inner()
-        .for_each(|arg| extend_buffer(&mut buffer, arg.into()));
 
     let output = if let Some(mut buffer) = buffer {
         buffer.push('\n');
@@ -34,15 +34,5 @@ pub fn main() -> Result {
 
     loop {
         stdout.write_all(output.as_bytes())?;
-    }
-}
-
-#[inline]
-fn extend_buffer(buffer: &mut Option<String>, arg: Cow<'_, str>) {
-    if let Some(buffer) = buffer {
-        buffer.push(' '); // Manually put the space
-        buffer.push_str(arg.as_ref());
-    } else {
-        *buffer = Some(arg.into_owned())
     }
 }
