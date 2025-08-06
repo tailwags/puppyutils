@@ -38,9 +38,20 @@ fn count_lines<R: BufRead>(mut reader: R) -> Result<(usize, usize, usize, usize)
     Ok((lines, words, chars, bytes))
 }
 
+enum StdioOrValue {
+    Value(String),
+    Stdio,
+}
+
+impl<T: AsRef<str>> From<T> for StdioOrValue {
+    fn from(value: T) -> Self {
+        Self::Value(value.as_ref().into())
+    }
+}
+
 pub fn main() -> Result {
     let mut stdout = stdout();
-    let mut files = Vec::new();
+    let mut files: Vec<StdioOrValue> = Vec::new();
 
     let mut flags = Flags::empty();
 
@@ -51,8 +62,9 @@ pub fn main() -> Result {
         Short('m') | Long("chars") => flags |= Flags::CHARS
         Short('c') | Long("bytes") => flags |= Flags::BYTES
         Value(value) => {
-            files.push(value.into_owned());
+            files.push(value.into());
         }
+        Stdio => files.push(StdioOrValue::Stdio)
     };
 
     if flags.is_empty() {
@@ -63,14 +75,13 @@ pub fn main() -> Result {
 
     // If no files, read from stdin
     if files.is_empty() {
-        files.push("-".into());
+        files.push(StdioOrValue::Stdio);
     }
 
     for path in files {
-        let (lines, words, chars, bytes) = if path == "-" {
-            count_lines(BufReader::new(stdin()))?
-        } else {
-            count_lines(BufReader::new(File::open(&path)?))?
+        let (lines, words, chars, bytes) = match path {
+            StdioOrValue::Value(ref value) => count_lines(BufReader::new(File::open(value)?))?,
+            StdioOrValue::Stdio => count_lines(BufReader::new(stdin()))?,
         };
 
         let mut first = true;
@@ -99,7 +110,7 @@ pub fn main() -> Result {
             write_num(bytes)?;
         }
 
-        if path != "-" {
+        if let StdioOrValue::Value(path) = path {
             stdout.write_all(b" ")?;
             stdout.write_all(path.as_bytes())?;
         }
