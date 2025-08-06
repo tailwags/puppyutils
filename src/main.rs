@@ -1,3 +1,5 @@
+#![feature(can_vector)]
+
 use std::{borrow::Cow, env::current_exe, os::unix::ffi::OsStrExt, path::PathBuf};
 
 use puppyutils::{Exit, Result};
