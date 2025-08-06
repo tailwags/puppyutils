@@ -1,3 +1,5 @@
+#![feature(can_vector)]
+
 use std::{
     borrow::Cow,
     fmt::{Debug, Display},
