@@ -19,7 +19,7 @@ strip = false
 acumen = "0.0.3"
 bitflags = "2.9.1"
 itoa = "1.0.15"
-rustix = { version = "1.0.7", features = [
+rustix = { version = "1.0.8", features = [
     "process",
     "system",
     "termios",
