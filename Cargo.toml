@@ -16,14 +16,12 @@ inherits = "release"
 strip = false
 
 [dependencies]
-acumen = "0.0.3"
 bitflags = "2.9.1"
 itoa = "1.0.15"
-rustix = { version = "1.0.8", features = [
-    "process",
-    "system",
-    "termios",
-    "fs",
-    "stdio",
-] }
 sap = "0.0.5"
+xenia = "0.0.4"
+xenia-utils = "0.0.1"
+
+[patch.crates-io]
+# xenia = { path = "../../xenia" }
+# xenia-utils = { path = "../../xenia/utils" }

@@ -1,7 +1,6 @@
 use std::{io::stdout, process::exit};
 
 use puppyutils::{Result, cli_with_args};
-use rustix::process::EXIT_FAILURE;
 use sap::Parser;
 
 pub fn main() -> Result {
@@ -14,5 +13,5 @@ pub fn main() -> Result {
         cli_with_args!(args_parser, "false", stdout, #ignore);
     }
 
-    exit(EXIT_FAILURE);
+    exit(1);
 }

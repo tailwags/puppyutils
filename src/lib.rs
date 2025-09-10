@@ -1,13 +1,11 @@
 use std::{
     borrow::Cow,
+    ffi::c_uint,
     fmt::{Debug, Display},
     fs, io,
 };
 
-use rustix::{
-    fs::{Mode, RawMode},
-    process::umask,
-};
+use xenia::{Mode, umask};
 
 pub type Result<T = (), E = Exit> = std::result::Result<T, E>;
 
@@ -30,9 +28,9 @@ impl Debug for Exit {
     }
 }
 
-impl From<rustix::io::Errno> for Exit {
-    fn from(value: rustix::io::Errno) -> Self {
-        Self::IoError(value.into())
+impl From<xenia::Errno> for Exit {
+    fn from(value: xenia::Errno) -> Self {
+        Self::IoError(io::Error::from_raw_os_error(value.raw_os_error()))
     }
 }
 
@@ -177,9 +175,9 @@ pub fn get_umask() -> Mode {
     if let Ok(status) = fs::read_to_string("/proc/self/status")
         && let Some(umask) = status
             .lines()
-            .find_map(|line| RawMode::from_str_radix(line.strip_prefix("Umask:")?.trim(), 8).ok())
+            .find_map(|line| c_uint::from_str_radix(line.strip_prefix("Umask:")?.trim(), 8).ok())
     {
-        return Mode::from_raw_mode(umask);
+        return Mode::from_bits_retain(umask);
     }
 
     // Fallback method with a possible race condition

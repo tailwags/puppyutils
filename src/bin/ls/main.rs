@@ -1,11 +1,15 @@
+#![allow(unused)]
+
 mod options;
 mod settings;
 
 use puppyutils::Result;
-use rustix::{
-    fs::{Dir, Mode, OFlags, open},
-    termios::tcgetwinsize,
-};
+use xenia::stdio::stderr;
+use xenia_utils::termios::{Winsize, tcgetwinsize};
+// use rustix::{
+//     fs::{Dir, Mode, OFlags, open},
+//     termios::tcgetwinsize,
+// };
 use std::io::{self, BufWriter, stdout};
 
 const CURRENT_DIR_PATH: &str = ".";
@@ -15,21 +19,25 @@ pub fn main() -> Result {
     let winsize = get_win_size();
     let _cfg = settings::parse_arguments(winsize.ws_col, &mut stdout)?;
 
-    let fd = open(
-        CURRENT_DIR_PATH,
-        OFlags::DIRECTORY | OFlags::RDONLY,
-        Mode::RUSR,
-    )?;
+    // FIXME: re-implement using xenia
 
-    let dir = Dir::new(fd)?;
+    // let fd = open(
+    //     CURRENT_DIR_PATH,
+    //     OFlags::DIRECTORY | OFlags::RDONLY,
+    //     Mode::RUSR,
+    // )?;
 
-    // bad bad bad
-    // FIXME: do not allocate
-    let names = dir
-        .filter_map(Result::ok)
-        .map(|entry| entry.file_name().to_string_lossy().into_owned())
-        .filter(|entry| !entry.starts_with('.'))
-        .collect::<Vec<_>>();
+    // let dir = Dir::new(fd)?;
+
+    // // bad bad bad
+    // // FIXME: do not allocate
+    // let names = dir
+    //     .filter_map(Result::ok)
+    //     .map(|entry| entry.file_name().to_string_lossy().into_owned())
+    //     .filter(|entry| !entry.starts_with('.'))
+    //     .collect::<Vec<_>>();
+
+    let names = Vec::new();
 
     let mut stdout = BufWriter::new(stdout);
 
@@ -38,8 +46,8 @@ pub fn main() -> Result {
     Ok(())
 }
 
-fn get_win_size() -> rustix::termios::Winsize {
-    let stderr_fd = rustix::stdio::stderr();
+fn get_win_size() -> Winsize {
+    let stderr_fd = stderr();
     tcgetwinsize(stderr_fd).expect("couldn't get terminal size")
 }
 
@@ -49,7 +57,7 @@ fn print_all<O: io::Write>(cols: Vec<String>, stdout: &mut O) -> Result {
     const MIN_COLUMN_WIDTH: u16 = 3;
 
     let len = cols.len();
-    let stderr_fd = rustix::stdio::stderr();
+    let stderr_fd = stderr();
     let winsize = tcgetwinsize(stderr_fd).expect("couldn't get terminal size");
 
     let max_idx = ((winsize.ws_col / 3) / MIN_COLUMN_WIDTH - 1) as usize;

@@ -5,7 +5,7 @@ use std::{
 };
 
 use puppyutils::{Result, cli};
-use rustix::{fs::stat, process::getcwd};
+use xenia::{getcwd, stat};
 
 pub fn main() -> Result {
     let mut stdout = stdout();

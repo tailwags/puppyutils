@@ -1,7 +1,7 @@
 use std::io::{Write, stdout};
 
 use puppyutils::{Result, cli};
-use rustix::system::uname;
+use xenia::uname;
 
 bitflags::bitflags! {
     #[rustfmt::skip]

@@ -4,10 +4,7 @@ use std::{
 };
 
 use puppyutils::{Result, cli};
-use rustix::{
-    process::{EXIT_FAILURE, EXIT_SUCCESS},
-    termios::{isatty, ttyname},
-};
+use xenia_utils::termios::{isatty, ttyname};
 
 pub fn main() -> Result {
     let mut stdout = stdout();
@@ -23,11 +20,7 @@ pub fn main() -> Result {
     let is_tty = isatty(&stdin);
 
     if quiet {
-        if is_tty {
-            exit(EXIT_SUCCESS)
-        } else {
-            exit(EXIT_FAILURE)
-        }
+        if is_tty { exit(0) } else { exit(1) }
     }
 
     if is_tty {

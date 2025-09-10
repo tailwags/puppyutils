@@ -1,7 +1,7 @@
 use std::io::stdout;
 
 use puppyutils::{Result, cli, get_umask};
-use rustix::fs::{Mode, mkdir};
+use xenia::{Mode, mkdir};
 
 pub fn main() -> Result {
     let mut stdout = stdout();
@@ -15,7 +15,7 @@ pub fn main() -> Result {
         }
     };
 
-    let mode = Mode::from_raw_mode(0o777) & !get_umask();
+    let mode = Mode::from_bits_retain(0o777) & !get_umask();
 
     for dir in dirs {
         mkdir(dir, mode)?;
