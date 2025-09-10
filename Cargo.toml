@@ -18,7 +18,7 @@ strip = false
 [dependencies]
 bitflags = "2.9.1"
 itoa = "1.0.15"
-sap = "0.0.5"
+sap = "0.0.7"
 xenia = "0.0.4"
 xenia-utils = "0.0.1"
 

@@ -33,9 +33,9 @@ dependencies = [
 
 [[package]]
 name = "sap"
-version = "0.0.5"
+version = "0.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32391a1f97f8182ee05a73831e5084311a883b52b93d2d756c6949fd577b56c7"
+checksum = "0396d175c482d7af9c821d7895255cbdbbde2a04f55c9f4bcbff66aed4f06811"
 
 [[package]]
 name = "xenia"
