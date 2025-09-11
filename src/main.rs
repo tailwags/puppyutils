@@ -9,6 +9,7 @@ pub mod bin {
     pub mod ls;
     pub mod mkdir;
     pub mod pwd;
+    pub mod touch;
     pub mod r#true;
     pub mod tty;
     pub mod uname;
@@ -33,6 +34,7 @@ fn main() -> Result {
         b"ls" => bin::ls::main(),
         b"mkdir" => bin::mkdir::main(),
         b"pwd" => bin::pwd::main(),
+        b"touch" => bin::touch::main(),
         b"true" => bin::r#true::main(),
         b"tty" => bin::tty::main(),
         b"uname" => bin::uname::main(),
