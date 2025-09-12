@@ -24,6 +24,8 @@ rustup will automatically install the correct version and components.
 
 ## Available Utilities
 
+### Fully Implemented
+
 - **`true`** - Exit with success status
 - **`false`** - Exit with failure status
 - **`uname`** - Display system information
@@ -31,22 +33,21 @@ rustup will automatically install the correct version and components.
 - **`yes`** - Output strings repeatedly
 - **`pwd`** - Print current working directory
 - **`tty`** - Print terminal name
+- **`wc`** - Count lines, words, characters, and bytes in files
 
-### Currently in Development
+### Partially Implemented
 
-- **`ls`** - List directory contents (basic functionality implemented)
-- **`cat`** - Concatenate and display files (basic functionality implemented,
-  missing most options)
-- **`mkdir`** - Create directories (missing standard options like -p, -m, -v)
+- **`touch`** - Update file timestamps and create files (supports -a, -m, -c flags)
+- **`cat`** - Concatenate and display files (basic functionality implemented)
+- **`mkdir`** - Create directories (basic functionality, missing -p, -m, -v options)
+- **`ls`** - List directory contents (framework implemented but currently non-functional)
 
-### Missing
+## Development Status
 
-The project is still in early development, so the majority of standard Unix
-utilities remain unimplemented. Rather than maintaining an exhaustive list of
-missing commands, we're focusing on building a solid foundation with the core
-utilities first. As the project matures and more commands are added, this
-section will be expanded to highlight specific gaps and implementation
-priorities.
+The project is in active development with a focus on correctness, performance,
+and minimal binary size. Current priorities include completing core file system
+utilities and implementing comprehensive option support for partially completed
+commands.
 
 ## Usage
 
