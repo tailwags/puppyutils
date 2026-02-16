@@ -4,15 +4,15 @@ version = 4
 
 [[package]]
 name = "bitflags"
-version = "2.9.4"
+version = "2.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2261d10cca569e4643e526d8dc2e62e433cc8aba21ab764233731f8d369bf394"
+checksum = "843867be96c8daad0d758b57df9392b6d8d271134fce549de6ce169ff98a92af"
 
 [[package]]
 name = "itoa"
-version = "1.0.15"
+version = "1.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c"
+checksum = "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2"
 
 [[package]]
 name = "linux-raw-sys"
@@ -33,15 +33,15 @@ dependencies = [
 
 [[package]]
 name = "sap"
-version = "0.0.7"
+version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0396d175c482d7af9c821d7895255cbdbbde2a04f55c9f4bcbff66aed4f06811"
+checksum = "9b1d5c2755a728d024ddc96331896afdce3e59ccba2a4a4452e706a66d2fdc91"
 
 [[package]]
 name = "xenia"
-version = "0.0.4"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bf7452301aac8a118d5229aea6078bcf88f91b4d0ecb76807c784a89fa03f735"
+checksum = "60b52d30edd20ffe6ca986171fce0f7d78d7cfa85e61a1117d0aba10ea08dbc4"
 dependencies = [
  "bitflags",
  "linux-raw-sys",
@@ -49,9 +49,9 @@ dependencies = [
 
 [[package]]
 name = "xenia-utils"
-version = "0.0.1"
+version = "0.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7759ef051645bbd044872da29c1b7747425f373817edec2e9f97dac5047ede2a"
+checksum = "ae39904b84467711c329c178addd0e326073c7a81f95b4ce623494b7e247cee2"
 dependencies = [
  "linux-raw-sys",
  "xenia",

@@ -131,7 +131,7 @@ macro_rules! cli {
     };
 
     ($name:literal, $stdout:ident, #error $($item:pat => $matcher:expr)*) => {
-        $crate::_cli_impl!($name, $stdout, while, $($item => $matcher)* arg => return Err(arg.into_error(None).into()))
+        $crate::_cli_impl!($name, $stdout, while, $($item => $matcher)* arg => return Err(arg.unexpected().into()))
     };
 }
 
@@ -150,7 +150,7 @@ macro_rules! cli_with_args {
     };
 
     ($args:ident, $name:literal, $stdout:ident, #error $($item:pat => $matcher:expr)*) => {
-        $crate::_cli_impl!($args, $name, $stdout, while, $($item => $matcher)* arg => return Err(arg.into_error(None).into()))
+        $crate::_cli_impl!($args, $name, $stdout, while, $($item => $matcher)* arg => return Err(arg.unexpected().into()))
     };
 }
 
