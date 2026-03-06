@@ -19,12 +19,9 @@ pub mod bin {
 }
 
 fn main() -> Result {
-    let util = match std::env::args_os().next() {
-        Some(name) => PathBuf::from(name),
-        None => current_exe()?,
-    };
+    let current_exe = current_exe()?;
 
-    let util = util
+    let util = current_exe
         .file_stem()
         .ok_or::<Exit>("Failed to get util name".into())?;
 
