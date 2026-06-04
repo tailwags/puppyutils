@@ -30,6 +30,7 @@
               cargo-nextest
               cargo-expand
               cargo-bloat
+              cargo-edit
               (rust-bin.fromRustupToolchainFile ./rust-toolchain.toml)
             ];
           };
