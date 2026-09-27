@@ -5,7 +5,7 @@ name = "puppyutils"
 version = "0.0.1"
 edition = "2024"
 license = "EUPL-1.2"
-authors = ["Matilde Morrone <contact@matilde.pet>"]
+authors = ["Matilde Morrone <contact@rosymati.com>"]
 
 [profile.release]
 lto = true
